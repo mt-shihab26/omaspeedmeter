@@ -6,7 +6,7 @@
 // so they render the same way the built-in bar icons do.
 var METRICS = [  
   { key: "cpu", label: "CPU", icon: "" },     // oct-cpu
-  { key: "mem", label: "MEM", icon: "" },     // fa-memory
+  { key: "mem", label: "MEM", icon: "" },     // fa-memory
   { key: "net", label: "NET", icon: "" },     // fa-exchange (up/down)
   { key: "temp", label: "TEMP", icon: "" },   // fa-thermometer-half
   { key: "gpu", label: "GPU", icon: "" },     // fa-microchip
@@ -27,7 +27,7 @@ function defaultSettings() {
     gpu: true,
     procs: false,
     labels: false,
-    netSplit: false,
+    netSplit: true,
     gpuVendor: "auto",
     tempZone: "auto",
     netIface: "auto"
