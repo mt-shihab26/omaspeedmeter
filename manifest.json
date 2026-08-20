@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "shihab.sysmon",
+  "name": "System Monitor",
+  "version": "1.0.0",
+  "author": "shihab",
+  "description": "Bar widget showing CPU, memory, network speed, temperature, GPU usage and process count, with per-metric toggles and settings via its click popup.",
+  "kinds": ["bar-widget"],
+  "entryPoints": { "barWidget": "BarWidget.qml" },
+  "barWidget": {
+    "displayName": "System Monitor",
+    "description": "CPU / MEM / NET / TEMP / GPU / process-count stats",
+    "category": "System",
+    "allowMultiple": false,
+    "defaultSection": "right",
+    "defaults": {
+      "interval": 2,
+      "cpu": true,
+      "mem": true,
+      "net": true,
+      "temp": true,
+      "gpu": true,
+      "procs": false,
+      "labels": false,
+      "netSplit": false,
+      "gpuVendor": "auto",
+      "tempZone": "auto",
+      "netIface": "auto"
+    },
+    "schema": [
+      { "key": "cpu", "type": "boolean", "label": "Show CPU %" },
+      { "key": "mem", "type": "boolean", "label": "Show memory %" },
+      { "key": "net", "type": "boolean", "label": "Show network speed" },
+      { "key": "temp", "type": "boolean", "label": "Show temperature" },
+      { "key": "gpu", "type": "boolean", "label": "Show GPU %" },
+      { "key": "procs", "type": "boolean", "label": "Show process count" },
+      { "key": "labels", "type": "boolean", "label": "Show word labels next to icons" },
+      { "key": "netSplit", "type": "boolean", "label": "Show download/upload as separate segments" },
+      { "key": "interval", "type": "number", "label": "Refresh interval (seconds)" },
+      { "key": "gpuVendor", "type": "string", "label": "GPU vendor (auto/nvidia/amd/intel/none)" },
+      { "key": "tempZone", "type": "string", "label": "Temperature source (auto or /sys path)" },
+      { "key": "netIface", "type": "string", "label": "Network interface (auto or name)" }
+    ]
+  }
+}
