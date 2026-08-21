@@ -110,8 +110,15 @@ about — and unit tested — without a Quickshell runtime.
 ```
 
 Symlinks `~/.config/omarchy/plugins/omaspeedmeter` to this repo, so Omarchy
-loads the plugin straight from your working tree instead of a copy — edit
-and reload the bar to see changes immediately.
+loads the plugin straight from your working tree instead of a copy. Run
+`./link.sh --remove` to remove the symlink.
+
+```bash
+omarchy restart shell
+```
+
+Restarts the Omarchy shell to pick up changes (BarWidget.qml is not
+hot-reloaded).
 
 ```bash
 ./format.sh
