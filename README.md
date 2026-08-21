@@ -5,19 +5,6 @@ process count, each individually toggleable from a click popup, plus a few
 other settings (refresh interval, GPU vendor, network interface, temperature
 source, combined vs. split up/down network display, word labels).
 
-## Layout
-
-- `manifest.json` — plugin manifest (`kinds: ["bar-widget"]`)
-- `BarWidget.qml` — the bar row + click popup (settings UI)
-- `Model.js` — pure formatting/settings helpers (no Quickshell runtime needed)
-- `bin/omaspeedmeter-*` — one standalone bash script per metric (`cpu`, `mem`,
-  `net`, `temp`, `gpu`, `procs`), each sampling `/proc`, `/sys`, and
-  optionally `nvidia-smi` / `intel_gpu_top`, printing its own JSON line.
-  `cpu` and `net` cache previous readings under `$XDG_CACHE_HOME/omaspeedmeter`
-  to compute deltas, so they must be polled periodically rather than run
-  once. `BarWidget.qml` only spawns the scripts for currently-enabled
-  metrics, each poll interval.
-
 ## Installation
 
 ```bash
