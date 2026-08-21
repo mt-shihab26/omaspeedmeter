@@ -269,6 +269,7 @@ if (typeof module !== "undefined") {
         parseStats: parseStats,
         formatPct: formatPct,
         formatTemp: formatTemp,
+        formatCount: formatCount,
         formatRate: formatRate,
         buildSegments: buildSegments,
         findSection: findSection,
