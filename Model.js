@@ -1,4 +1,4 @@
-// Pure helpers for the sysmon bar widget. Kept dependency-free so they can
+// Pure helpers for the omaspeedmeter bar widget. Kept dependency-free so they can
 // be reasoned about (and unit tested) without a QML/Quickshell runtime.
 
 // Icons come from the Font Awesome + Octicons subsets, which every Nerd

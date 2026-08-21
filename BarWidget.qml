@@ -5,7 +5,7 @@ import qs.Ui
 import qs.Commons
 import "Model.js" as Model
 
-// System Monitor bar widget: CPU / memory / network / temperature / GPU /
+// Omaspeedmeter bar widget: CPU / memory / network / temperature / GPU /
 // process-count stats in the bar row, with a click popup to toggle each
 // metric and tweak the underlying settings (refresh interval, GPU vendor,
 // temperature source, network interface).
@@ -200,7 +200,7 @@ Panel {
     // instead of collapsing to nothing.
     Text {
       visible: root.segments.length === 0
-      text: "sysmon"
+      text: "omaspeedmeter"
       color: root.bar ? root.bar.foreground : Color.foreground
       font.family: root.bar ? root.bar.fontFamily : Style.font.family
       font.pixelSize: Style.font.body
@@ -235,7 +235,7 @@ Panel {
         spacing: Style.space(10)
 
         Text {
-          text: "System Monitor"
+          text: "Omaspeedmeter"
           color: root.bar ? root.bar.foreground : Color.foreground
           font.family: root.bar ? root.bar.fontFamily : Style.font.family
           font.pixelSize: Style.font.title

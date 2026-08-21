@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "id": "mt-shihab26.omaspeedmeter",
-  "name": "System Monitor",
+  "name": "omaspeedmeter",
   "version": "1.0.0",
   "author": "mt-shihab26",
-  "description": "Bar widget showing CPU, memory, network speed, temperature, GPU usage and process count, with per-metric toggles and settings via its click popup.",
+  "description": "Omarchy bar widget showing CPU, memory, network, temperature, GPU, and process count stats.",
   "kinds": ["bar-widget"],
   "entryPoints": { "barWidget": "BarWidget.qml" },
   "barWidget": {
-    "displayName": "System Monitor",
+    "displayName": "Omaspeedmeter",
     "description": "CPU / MEM / NET / TEMP / GPU / process-count stats",
     "category": "System",
     "allowMultiple": false,

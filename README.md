@@ -1,4 +1,4 @@
-# omarchy-sysmon
+# omaspeedmeter
 
 Omarchy bar widget showing CPU, memory, network, temperature, GPU, and process count stats.
 
