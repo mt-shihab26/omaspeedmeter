@@ -8,9 +8,12 @@ move the widget between bar sections, and change the refresh interval, GPU
 vendor, temperature source, and network interface — all without editing
 config files by hand.
 
-![Omaspeedmeter bar widget preview](preview.png)
-
-https://github.com/user-attachments/assets/0743feb3-6452-4608-bf96-f9ca24336373
+<table>
+<tr>
+<td><img src="preview.png" width="100%" alt="Omaspeedmeter bar widget preview"></td>
+<td><video src="https://github.com/user-attachments/assets/0743feb3-6452-4608-bf96-f9ca24336373" width="100%" controls></video></td>
+</tr>
+</table>
 
 ## Installation
 
