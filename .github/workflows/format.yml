@@ -1,0 +1,40 @@
+name: Format
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    container: archlinux:base
+
+    steps:
+      - name: Enable Omarchy package repo
+        run: |
+          printf '\n[omarchy]\nSigLevel = Optional TrustAll\nServer = https://pkgs.omarchy.org/stable/$arch\n' >> /etc/pacman.conf
+          pacman -Sy --noconfirm
+
+      # qt6-declarative for qmlformat, nodejs/npm to install Prettier — the
+      # two formatters format.sh drives.
+      - name: Install dependencies
+        run: pacman -S --noconfirm --needed git qt6-declarative nodejs npm
+
+      - uses: actions/checkout@v4
+
+      - name: Install Prettier
+        run: npm install -g prettier
+
+      - name: Format
+        run: ./format.sh
+
+      - name: Commit Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: fix code style
+          commit_options: '--no-verify'

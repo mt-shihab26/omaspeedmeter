@@ -1,7 +1,7 @@
 #!/bin/bash
 # Formats every file in this repo: qmlformat for QML, Prettier for
-# everything else (JS/JSON/Markdown). Run from anywhere; paths are
-# resolved relative to this script.
+# everything else (JS/JSON/YAML/Markdown). Run from anywhere; paths
+# are resolved relative to this script.
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
@@ -24,3 +24,8 @@ prettier --write \
     "*.md" \
     "*.json" \
     "*.js"
+
+prettier --write \
+    --no-config \
+    --tab-width 2 \
+    ".github/**/*.yml"
