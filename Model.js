@@ -20,7 +20,7 @@ var NET_UP_ICON = ""   // fa-upload
 function defaultSettings() {
   return {
     interval: 2,
-    gap: 8,
+    gap: 17,
     cpu: true,
     mem: true,
     net: true,

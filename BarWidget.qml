@@ -14,7 +14,12 @@ Panel {
   moduleName: "mt-shihab26.omaspeedmeter"
   ipcTarget: moduleName
 
-  readonly property var resolved: Model.resolvedSettings(root.settings, { gap: Style.spacing.controlGap })
+  // Omarchy's own bar widgets (WidgetButton) each carry an 8.5px scaled
+  // horizontal margin either side; with zero spacing between modules in
+  // the bar row, two adjacent widgets end up 17px apart. Using that same
+  // raw value here (then run through Style.space() below, same as a
+  // user-entered gap) reproduces that spacing and keeps it theme-scaled.
+  readonly property var resolved: Model.resolvedSettings(root.settings, { gap: 17 })
   property var stats: null
   readonly property var segments: Model.buildSegments(root.settings, root.stats)
 

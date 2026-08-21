@@ -15,7 +15,7 @@
     "defaultSection": "right",
     "defaults": {
       "interval": 2,
-      "gap": 8,
+      "gap": 17,
       "cpu": true,
       "mem": true,
       "net": true,
