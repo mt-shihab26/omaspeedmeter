@@ -5,12 +5,12 @@
 // Font variant bundles (Omarchy ships one as the bar's monospace family),
 // so they render the same way the built-in bar icons do.
 var METRICS = [  
-  { key: "net", label: "NET", icon: "" },     // fa-exchange (up/down)
-  { key: "cpu", label: "CPU", icon: "" },     // oct-cpu
-  { key: "temp", label: "TEMP", icon: "" },   // fa-thermometer-half
-  { key: "mem", label: "MEM", icon: "" },     // fa-memory
-  { key: "gpu", label: "GPU", icon: "󰢮" },     // md-expansion_card
-  { key: "procs", label: "PROC", icon: "" }   // fa-tasks
+  { key: "net", label: "NET", icon: "", description: "Download/upload speed" },     // fa-exchange (up/down)
+  { key: "cpu", label: "CPU", icon: "", description: "CPU usage percentage" },     // oct-cpu
+  { key: "temp", label: "TEMP", icon: "", description: "CPU temperature" },   // fa-thermometer-half
+  { key: "mem", label: "MEM", icon: "", description: "Memory usage percentage" },     // fa-memory
+  { key: "gpu", label: "GPU", icon: "󰢮", description: "GPU usage percentage" },     // md-expansion_card
+  { key: "procs", label: "PROC", icon: "", description: "Running process count" }   // fa-tasks
 ];
 
 
@@ -116,7 +116,7 @@ function buildSegments(settings, stats) {
 
   function push(key, valueText) {
     var m = metric(key)
-    var prefix = m.icon + " " + (labels ? m.label + " " : "")
+    var prefix = labels ? (m.label + " ") : (m.icon + " ")
     segments.push({ key: key, text: prefix + valueText })
   }
 
@@ -124,8 +124,8 @@ function buildSegments(settings, stats) {
     if (s.netSplit) {
       var down = stats ? formatRate(stats.rx) : "…"
       var up = stats ? formatRate(stats.tx) : "…"
-      segments.push({ key: "net-down", text: (labels ? "DOWN " : "") + NET_DOWN_ICON + " " + down })
-      segments.push({ key: "net-up", text: (labels ? "UP " : "") + NET_UP_ICON + " " + up })
+      segments.push({ key: "net-down", text: (labels ? "DOWN " : (NET_DOWN_ICON + " ")) + down })
+      segments.push({ key: "net-up", text: (labels ? "UP " : (NET_UP_ICON + " ")) + up })
     } else {
       var total = stats ? formatRate((Number(stats.rx) || 0) + (Number(stats.tx) || 0)) : "…"
       push("net", total)

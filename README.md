@@ -30,8 +30,8 @@ reliable way to pick up changes here.
 First time only:
 
 ```bash
-omarchy plugin enable shihab.sysmon
-omarchy bar move shihab.sysmon --section right   # or left/center
+omarchy plugin enable mt-shihab26.omaspeedmeter
+omarchy bar move mt-shihab26.omaspeedmeter --section right   # or left/center
 ```
 
 ## Settings
@@ -40,7 +40,7 @@ All settings live inline on the widget's `shell.json` bar-layout entry and
 can be changed either from the popup (click the widget) or via:
 
 ```bash
-omarchy bar set shihab.sysmon <key> <value> --json
+omarchy bar set mt-shihab26.omaspeedmeter <key> <value> --json
 ```
 
 | Key | Type | Default | Meaning |

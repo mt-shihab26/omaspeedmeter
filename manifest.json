@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "shihab.sysmon",
+  "id": "mt-shihab26.omaspeedmeter",
   "name": "System Monitor",
   "version": "1.0.0",
-  "author": "shihab",
+  "author": "mt-shihab26",
   "description": "Bar widget showing CPU, memory, network speed, temperature, GPU usage and process count, with per-metric toggles and settings via its click popup.",
   "kinds": ["bar-widget"],
   "entryPoints": { "barWidget": "BarWidget.qml" },

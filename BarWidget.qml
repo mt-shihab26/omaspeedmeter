@@ -11,7 +11,7 @@ import "Model.js" as Model
 // temperature source, network interface).
 Panel {
   id: root
-  moduleName: "shihab.sysmon"
+  moduleName: "mt-shihab26.omaspeedmeter"
   ipcTarget: moduleName
 
   readonly property var resolved: Model.resolvedSettings(root.settings)
@@ -204,6 +204,7 @@ Panel {
             required property var modelData
             width: settingsColumn.width
             label: modelData.icon + "  " + modelData.label
+            description: modelData.description || ""
             checked: root.resolved[modelData.key] === true
             foreground: root.bar ? root.bar.foreground : Color.foreground
             fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
@@ -214,7 +215,7 @@ Panel {
         Toggle {
           width: settingsColumn.width
           label: "Split network up/down"
-          description: "Show download and upload as two separate segments instead of one combined \"↓ ↑\" segment"
+          description: "Separate download and upload"
           checked: root.resolved.netSplit === true
           foreground: root.bar ? root.bar.foreground : Color.foreground
           fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
@@ -224,7 +225,7 @@ Panel {
         Toggle {
           width: settingsColumn.width
           label: "Show word labels"
-          description: "e.g. \"CPU 12%\" instead of just the icon + value"
+          description: "Show label instead of icon"
           checked: root.resolved.labels === true
           foreground: root.bar ? root.bar.foreground : Color.foreground
           fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
