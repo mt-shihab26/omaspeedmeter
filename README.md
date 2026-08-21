@@ -10,6 +10,8 @@ config files by hand.
 
 ![Omaspeedmeter bar widget preview](preview.png)
 
+https://github.com/user-attachments/assets/0743feb3-6452-4608-bf96-f9ca24336373
+
 ## Installation
 
 ```bash
