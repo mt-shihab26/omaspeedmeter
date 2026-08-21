@@ -103,6 +103,23 @@ the bar segments. `Model.js` holds all the pure logic (settings resolution,
 formatting, segment building) separately from the QML so it can be reasoned
 about — and unit tested — without a Quickshell runtime.
 
+## Development
+
+```bash
+./link.sh
+```
+
+Symlinks `~/.config/omarchy/plugins/omaspeedmeter` to this repo, so Omarchy
+loads the plugin straight from your working tree instead of a copy — edit
+and reload the bar to see changes immediately.
+
+```bash
+./format.sh
+```
+
+Formats the repo: `qmlformat` for `BarWidget.qml`, Prettier for
+Markdown/JSON/JS. Run before committing.
+
 ## Requirements
 
 - Linux with `/proc` and `/sys` available (standard on any distro).
