@@ -17,6 +17,7 @@ Panel {
   readonly property var resolved: Model.resolvedSettings(root.settings)
   property var stats: null
   readonly property var segments: Model.buildSegments(root.settings, root.stats)
+  property string currentSection: ""
 
   // The plugin's own directory, so the polling script can be found no
   // matter where this plugin checkout/symlink lives.
@@ -46,6 +47,32 @@ Panel {
 
   function toggleMetric(key) {
     root.setSetting(key, !root.resolved[key], true)
+  }
+
+  function refreshSection() {
+    if (!sectionProc.running) sectionProc.running = true
+  }
+
+  function setSection(section) {
+    root.currentSection = section
+    moveSectionProc.command = ["omarchy", "bar", "move", root.moduleName, "--section", section]
+    moveSectionProc.running = true
+  }
+
+  onOpenedChanged: if (opened) root.refreshSection()
+
+  Process {
+    id: sectionProc
+    command: ["omarchy-shell", "shell", "listShellConfig"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: root.currentSection = Model.findSection(text, root.moduleName) || root.currentSection
+    }
+  }
+
+  Process {
+    id: moveSectionProc
+    stdout: StdioCollector { waitForEnd: true }
   }
 
   Component.onCompleted: refresh()
@@ -187,6 +214,26 @@ Panel {
           text: "SETTINGS"
           foreground: root.bar ? root.bar.foreground : Color.foreground
           fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+        }
+
+        Column {
+          width: settingsColumn.width
+          spacing: Style.space(4)
+
+          Text {
+            text: "Bar position"
+            color: Qt.darker(root.bar ? root.bar.foreground : Color.foreground, 1.4)
+            font.family: root.bar ? root.bar.fontFamily : Style.font.family
+            font.pixelSize: Style.font.caption
+          }
+
+          ButtonGroup {
+            options: ["left", "center", "right"]
+            value: root.currentSection
+            foreground: root.bar ? root.bar.foreground : Color.foreground
+            fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+            onChanged: function(v) { root.setSection(v) }
+          }
         }
 
         NumberField {

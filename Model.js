@@ -130,7 +130,7 @@ function buildSegments(settings, stats) {
       segments.push({ key: "net-down", text: (labels ? "DOWN " : "") + NET_DOWN_ICON + " " + down })
       segments.push({ key: "net-up", text: (labels ? "UP " : "") + NET_UP_ICON + " " + up })
     } else {
-      segments.push({ key: "net", text: netLabel + NET_DOWN_ICON + " " + down + "  " + NET_UP_ICON + " " + up })
+      segments.push({ key: "net", text: netLabel + NET_DOWN_ICON + " " + down + " " + NET_UP_ICON + " " + up })
     }
   }
   if (s.temp) push("temp", stats ? formatTemp(stats.temp) : "…")
@@ -138,6 +138,30 @@ function buildSegments(settings, stats) {
   if (s.procs) push("procs", stats ? String(stats.procs) : "…")
 
   return segments
+}
+
+// Finds which bar section (left/center/right) a widget currently lives in,
+// given the raw JSON text from `omarchy-shell shell listShellConfig`.
+// Returns null if the widget isn't placed or the config can't be parsed.
+function findSection(configText, moduleName) {
+  try {
+    var cfg = JSON.parse(String(configText || "").trim())
+    var layout = cfg && cfg.bar && cfg.bar.layout
+    if (!layout) return null
+    var sections = ["left", "center", "right"]
+    for (var i = 0; i < sections.length; i++) {
+      var arr = layout[sections[i]]
+      if (!Array.isArray(arr)) continue
+      for (var j = 0; j < arr.length; j++) {
+        var entry = arr[j]
+        var id = (entry && typeof entry === "object") ? entry.id : entry
+        if (id === moduleName) return sections[i]
+      }
+    }
+  } catch (e) {
+    // fall through
+  }
+  return null
 }
 
 if (typeof module !== "undefined") {
@@ -154,6 +178,7 @@ if (typeof module !== "undefined") {
     formatPct: formatPct,
     formatTemp: formatTemp,
     formatRate: formatRate,
-    buildSegments: buildSegments
+    buildSegments: buildSegments,
+    findSection: findSection
   }
 }
