@@ -8,7 +8,7 @@ move the widget between bar sections, and change the refresh interval, GPU
 vendor, temperature source, and network interface — all without editing
 config files by hand.
 
-![Omaspeedmeter bar widget screenshot](docs/screenshot.png)
+![Omaspeedmeter bar widget preview](preview.png)
 
 ## Installation
 
@@ -105,3 +105,8 @@ about — and unit tested — without a Quickshell runtime.
 
 If a required tool is missing, that metric's script emits `null` and the
 segment is skipped rather than erroring.
+
+## License
+
+[MIT](LICENSE)
+
