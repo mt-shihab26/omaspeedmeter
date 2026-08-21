@@ -85,12 +85,27 @@ Panel {
             procsProc.running = true;
     }
 
+    // Queued rather than fired directly at setSettingProc: resetSettings()
+    // below calls this once per setting in the same tick, and reassigning
+    // `command`/`running` on an already-running Process drops everything
+    // but the first call, since `running = true` is a no-op when it's
+    // already true.
+    property var settingQueue: []
+
     function setSetting(key, value, isJson) {
         var args = ["bar", "set", root.moduleName, key, String(value)];
         if (isJson)
             args.push("--json");
 
-        setSettingProc.command = ["omarchy"].concat(args);
+        root.settingQueue.push(["omarchy"].concat(args));
+        root.pumpSettingQueue();
+    }
+
+    function pumpSettingQueue() {
+        if (setSettingProc.running || root.settingQueue.length === 0)
+            return;
+
+        setSettingProc.command = root.settingQueue.shift();
         setSettingProc.running = true;
     }
 
@@ -116,12 +131,19 @@ Panel {
         root.setSetting("order", order.join(","), false);
     }
 
-    // Restores the original METRICS insertion order (net, cpu, temp, mem,
-    // gpu, procs), undoing any moveMetric calls.
-    function resetOrder() {
-        root.setSetting("order", Model.METRICS.map(function (m) {
-            return m.key;
-        }).join(","), false);
+    // Restores every setting (toggles, netSplit, labels, interval, gap,
+    // gpuVendor, netIface, tempZone, segment order) to its manifest default.
+    function resetSettings() {
+        var defaults = Model.defaultSettings();
+        for (var key in defaults) {
+            var value = defaults[key];
+            if (key === "order")
+                root.setSetting(key, value.join(","), false);
+            else if (typeof value === "boolean" || typeof value === "number")
+                root.setSetting(key, value, true);
+            else
+                root.setSetting(key, value, false);
+        }
     }
 
     function refreshSection() {
@@ -158,6 +180,7 @@ Panel {
         stdout: StdioCollector {
             waitForEnd: true
         }
+        onExited: root.pumpSettingQueue()
     }
 
     Process {
@@ -318,7 +341,10 @@ Panel {
         owner: root
         bar: root.bar
         open: root.opened
-        contentWidth: panel.fittedContentWidth(Style.space(320))
+        // Same fittedContentWidth pattern Omarchy's own panels use (e.g. the
+        // agents/AI widget's KeyboardPanel) — fixed at 360 in practice, only
+        // capped down on a screen too narrow to fit it.
+        contentWidth: panel.fittedContentWidth(Style.space(360))
         contentHeight: panel.fittedContentHeight(settingsColumn.implicitHeight, Style.space(480))
 
         Flickable {
@@ -334,41 +360,41 @@ Panel {
                 width: parent.width
                 spacing: Style.space(10)
 
-                Text {
-                    text: "Omaspeedmeter"
-                    color: root.bar ? root.bar.foreground : Color.foreground
-                    font.family: root.bar ? root.bar.fontFamily : Style.font.family
-                    font.pixelSize: Style.font.title
-                    font.bold: true
-                }
-
-                PanelSeparator {
-                    foreground: root.bar ? root.bar.foreground : Color.foreground
-                }
-
                 Item {
                     width: settingsColumn.width
-                    height: metricsHeader.implicitHeight
+                    height: titleText.implicitHeight
 
-                    PanelSectionHeader {
-                        id: metricsHeader
+                    Text {
+                        id: titleText
 
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
-                        text: "METRICS"
-                        foreground: root.bar ? root.bar.foreground : Color.foreground
-                        fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                        text: "Omaspeedmeter"
+                        color: root.bar ? root.bar.foreground : Color.foreground
+                        font.family: root.bar ? root.bar.fontFamily : Style.font.family
+                        font.pixelSize: Style.font.title
+                        font.bold: true
                     }
 
                     PanelActionButton {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter
                         iconText: "↺"
-                        tooltipText: "Reset order to default"
+                        tooltipText: "Reset all settings to default"
                         foreground: root.bar ? root.bar.foreground : Color.foreground
                         fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-                        onClicked: root.resetOrder()
+                        onClicked: root.resetSettings()
                     }
+                }
+
+                PanelSeparator {
+                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                }
+
+                PanelSectionHeader {
+                    text: "METRICS"
+                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                 }
 
                 Repeater {

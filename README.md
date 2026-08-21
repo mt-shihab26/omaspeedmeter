@@ -92,8 +92,8 @@ the `defaultSection` set on first install.
 Each row in the popup's METRICS list has ▲/▼ buttons to move that metric up
 or down; the bar segments re-render in the new order immediately, and it
 persists the same way as every other setting. The ↺ button next to the
-METRICS header resets the order back to the default
-(net, cpu, temp, mem, gpu, procs).
+popup title resets every setting in the table above back to its default,
+including the segment order.
 
 ## How it works
 
