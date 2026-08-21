@@ -61,19 +61,19 @@ persisted via [`omarchy bar set`](https://omarchy.org/manual/the-top-bar/).
 
 | Setting     | Default | Description                                                                    |
 | ----------- | ------- | ------------------------------------------------------------------------------ |
-| `cpu`       | `true`  | Show CPU usage %                                                               |
-| `mem`       | `true`  | Show memory usage %                                                            |
 | `net`       | `true`  | Show network speed                                                             |
+| `cpu`       | `true`  | Show CPU usage %                                                               |
 | `temp`      | `false` | Show CPU temperature                                                           |
+| `mem`       | `true`  | Show memory usage %                                                            |
 | `gpu`       | `false` | Show GPU usage %                                                               |
 | `procs`     | `false` | Show running process count                                                     |
-| `labels`    | `false` | Show word labels (`CPU`, `MEM`, ...) instead of icons                          |
 | `netSplit`  | `false` | Show download/upload as two separate segments                                  |
+| `labels`    | `false` | Show word labels (`CPU`, `MEM`, ...) instead of icons                          |
 | `interval`  | `2`     | Refresh interval, in seconds                                                   |
 | `gap`       | `17`    | Spacing between segments, in pixels (matches Omarchy's own bar widget spacing) |
 | `gpuVendor` | `auto`  | `auto`, `nvidia`, `amd`, `intel`, or `none`                                    |
-| `tempZone`  | `auto`  | `auto`, or a specific `/sys/class/thermal/thermal_zone*/temp` path             |
 | `netIface`  | `auto`  | `auto`, or a specific network interface name                                   |
+| `tempZone`  | `auto`  | `auto`, or a specific `/sys/class/thermal/thermal_zone*/temp` path             |
 
 `auto` for GPU vendor and temperature zone probes the system on each poll;
 pinning a specific value skips detection and avoids picking the wrong sensor
