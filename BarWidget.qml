@@ -14,7 +14,7 @@ Panel {
   moduleName: "mt-shihab26.omaspeedmeter"
   ipcTarget: moduleName
 
-  readonly property var resolved: Model.resolvedSettings(root.settings)
+  readonly property var resolved: Model.resolvedSettings(root.settings, { gap: Style.spacing.controlGap })
   property var stats: null
   readonly property var segments: Model.buildSegments(root.settings, root.stats)
 

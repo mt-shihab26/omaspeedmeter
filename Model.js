@@ -56,8 +56,13 @@ function stringSetting(settings, key, fallback) {
   return (typeof v === "string" && v.length > 0) ? v : fallback
 }
 
-function resolvedSettings(settings) {
+// `dynamicDefaults` lets the QML layer override a static default with a
+// live value it alone has access to — e.g. "gap" falling back to
+// Style.spacing.controlGap so the widget tracks the user's Omarchy theme
+// instead of a pixel value baked into this file.
+function resolvedSettings(settings, dynamicDefaults) {
   var d = defaultSettings()
+  for (var dk in (dynamicDefaults || {})) d[dk] = dynamicDefaults[dk]
   var out = {}
   for (var k in d) {
     if (typeof d[k] === "boolean") out[k] = boolSetting(settings, k, d[k])
