@@ -10,37 +10,37 @@ var METRICS = [
         label: "NET",
         icon: "", // fa-exchange (up/down)
         description: "Download/upload speed",
-    }, 
+    },
     {
         key: "cpu",
         label: "CPU",
-        icon: "",  // oct-cpu
+        icon: "", // oct-cpu
         description: "CPU usage percentage",
     },
-    { 
+    {
         key: "temp",
-            label: "TEMP",
-            icon: "", // fa-thermometer-half
-            description: "CPU temperature"
-    }, 
+        label: "TEMP",
+        icon: "", // fa-thermometer-half
+        description: "CPU temperature",
+    },
     {
         key: "mem",
         label: "MEM",
         icon: "", // fa-memory
         description: "Memory usage percentage",
-    }, 
+    },
     {
         key: "gpu",
         label: "GPU",
         icon: "󰢮", // md-expansion_card
         description: "GPU usage percentage",
-    }, 
+    },
     {
         key: "procs",
         label: "PROC",
         icon: "", // fa-tasks
         description: "Running process count",
-    }, 
+    },
 ];
 
 var NET_DOWN_ICON = ""; // fa-download
