@@ -29,14 +29,14 @@ omarchy plugin remove mt-shihab26.omaspeedmeter
 
 ## Metrics
 
-| Metric  | Icon | Source                                       | Notes                                   |
-| ------- | :--: | --------------------------------------------- | ---------------------------------------- |
-| Network |     | `/sys/class/net/<iface>/statistics/*_bytes` | Combined or split into download/upload  |
-| CPU     |     | `/proc/stat`                                | Usage % since the previous poll         |
-| Temp    |     | `/sys/class/thermal/thermal_zone*/temp`     | Prefers the CPU package/core sensor     |
-| Memory  |     | `/proc/meminfo`                             | `(MemTotal - MemAvailable) / MemTotal` |
-| GPU     |  󰢮   | `nvidia-smi`, sysfs, or `intel_gpu_top`   | Vendor auto-detected                    |
-| Procs   |     | `/proc/[0-9]*`                              | Count of running process directories    |
+| Metric  | Icon | Source                                      | Notes                                  |
+| ------- | :--: | ------------------------------------------- | -------------------------------------- |
+| Network |      | `/sys/class/net/<iface>/statistics/*_bytes` | Combined or split into download/upload |
+| CPU     |      | `/proc/stat`                                | Usage % since the previous poll        |
+| Temp    |      | `/sys/class/thermal/thermal_zone*/temp`     | Prefers the CPU package/core sensor    |
+| Memory  |      | `/proc/meminfo`                             | `(MemTotal - MemAvailable) / MemTotal` |
+| GPU     |  󰢮   | `nvidia-smi`, sysfs, or `intel_gpu_top`     | Vendor auto-detected                   |
+| Procs   |      | `/proc/[0-9]*`                              | Count of running process directories   |
 
 Icons come from the Nerd Font glyph set Omarchy already ships for the bar, so
 they render consistently with the built-in widgets. Enable **word labels** in
@@ -51,21 +51,21 @@ refresh interval changes.
 All settings are toggled/edited from the bar widget's click popup, and are
 persisted via `omarchy bar set`.
 
-| Setting    | Default | Description                                              |
-| ---------- | ------- | ---------------------------------------------------------- |
-| `cpu`      | `true`  | Show CPU usage %                                          |
-| `mem`      | `true`  | Show memory usage %                                       |
-| `net`      | `true`  | Show network speed                                        |
-| `temp`     | `false` | Show CPU temperature                                       |
-| `gpu`      | `false` | Show GPU usage %                                           |
-| `procs`    | `false` | Show running process count                                 |
-| `labels`   | `false` | Show word labels (`CPU`, `MEM`, ...) instead of icons     |
-| `netSplit` | `false` | Show download/upload as two separate segments              |
-| `interval` | `2`     | Refresh interval, in seconds                                |
-| `gap`      | `17`    | Spacing between segments, in pixels (matches Omarchy's own bar widget spacing) |
-| `gpuVendor`| `auto`  | `auto`, `nvidia`, `amd`, `intel`, or `none`         |
-| `tempZone` | `auto`  | `auto`, or a specific `/sys/class/thermal/thermal_zone*/temp` path |
-| `netIface` | `auto`  | `auto`, or a specific network interface name              |
+| Setting     | Default | Description                                                                    |
+| ----------- | ------- | ------------------------------------------------------------------------------ |
+| `cpu`       | `true`  | Show CPU usage %                                                               |
+| `mem`       | `true`  | Show memory usage %                                                            |
+| `net`       | `true`  | Show network speed                                                             |
+| `temp`      | `false` | Show CPU temperature                                                           |
+| `gpu`       | `false` | Show GPU usage %                                                               |
+| `procs`     | `false` | Show running process count                                                     |
+| `labels`    | `false` | Show word labels (`CPU`, `MEM`, ...) instead of icons                          |
+| `netSplit`  | `false` | Show download/upload as two separate segments                                  |
+| `interval`  | `2`     | Refresh interval, in seconds                                                   |
+| `gap`       | `17`    | Spacing between segments, in pixels (matches Omarchy's own bar widget spacing) |
+| `gpuVendor` | `auto`  | `auto`, `nvidia`, `amd`, `intel`, or `none`                                    |
+| `tempZone`  | `auto`  | `auto`, or a specific `/sys/class/thermal/thermal_zone*/temp` path             |
+| `netIface`  | `auto`  | `auto`, or a specific network interface name                                   |
 
 `auto` for GPU vendor and temperature zone probes the system on each poll;
 pinning a specific value skips detection and avoids picking the wrong sensor
@@ -104,9 +104,9 @@ about — and unit tested — without a Quickshell runtime.
 - Linux with `/proc` and `/sys` available (standard on any distro).
 - `awk`, `bash`, `ip` — present on virtually every system.
 - GPU stats additionally require, depending on vendor:
-  - NVIDIA: `nvidia-smi`
-  - AMD: no extra tooling (reads sysfs directly)
-  - Intel: `intel_gpu_top` and `jq`
+    - NVIDIA: `nvidia-smi`
+    - AMD: no extra tooling (reads sysfs directly)
+    - Intel: `intel_gpu_top` and `jq`
 
 If a required tool is missing, that metric's script emits `null` and the
 segment is skipped rather than erroring.
@@ -114,4 +114,3 @@ segment is skipped rather than erroring.
 ## License
 
 [MIT](LICENSE)
-

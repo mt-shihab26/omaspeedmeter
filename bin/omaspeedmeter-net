@@ -9,11 +9,14 @@ STATE_FILE="$STATE_DIR/net"
 mkdir -p "$STATE_DIR"
 
 IFACE="auto"
-while (( $# > 0 )); do
-  case "$1" in
-    --iface) IFACE="${2:-auto}"; shift 2 ;;
+while (($# > 0)); do
+    case "$1" in
+    --iface)
+        IFACE="${2:-auto}"
+        shift 2
+        ;;
     *) shift ;;
-  esac
+    esac
 done
 
 now=$(date +%s.%N)
@@ -22,38 +25,38 @@ prev_ts=""
 prev_rx=0
 prev_tx=0
 if [[ -f "$STATE_FILE" ]]; then
-  # shellcheck disable=SC1090
-  source "$STATE_FILE" 2>/dev/null || true
+    # shellcheck disable=SC1090
+    source "$STATE_FILE" 2>/dev/null || true
 fi
 
 iface="$IFACE"
 if [[ "$iface" == "auto" || -z "$iface" ]]; then
-  iface=$(ip route show default 2>/dev/null | awk '{for(i=1;i<=NF;i++) if ($i=="dev") {print $(i+1); exit}}')
+    iface=$(ip route show default 2>/dev/null | awk '{for(i=1;i<=NF;i++) if ($i=="dev") {print $(i+1); exit}}')
 fi
 
 rx=0
 tx=0
 if [[ -n "$iface" && -r "/sys/class/net/$iface/statistics/rx_bytes" ]]; then
-  rx=$(<"/sys/class/net/$iface/statistics/rx_bytes")
-  tx=$(<"/sys/class/net/$iface/statistics/tx_bytes")
+    rx=$(<"/sys/class/net/$iface/statistics/rx_bytes")
+    tx=$(<"/sys/class/net/$iface/statistics/tx_bytes")
 fi
 
 rx_rate=0
 tx_rate=0
 if [[ -n "$prev_ts" ]]; then
-  dt=$(awk -v a="$now" -v b="$prev_ts" 'BEGIN { d=a-b; if (d<=0) d=1; printf "%.3f", d }')
-  if (( rx >= prev_rx )); then
-    rx_rate=$(awk -v d="$((rx - prev_rx))" -v dt="$dt" 'BEGIN { printf "%.0f", d/dt }')
-  fi
-  if (( tx >= prev_tx )); then
-    tx_rate=$(awk -v d="$((tx - prev_tx))" -v dt="$dt" 'BEGIN { printf "%.0f", d/dt }')
-  fi
+    dt=$(awk -v a="$now" -v b="$prev_ts" 'BEGIN { d=a-b; if (d<=0) d=1; printf "%.3f", d }')
+    if ((rx >= prev_rx)); then
+        rx_rate=$(awk -v d="$((rx - prev_rx))" -v dt="$dt" 'BEGIN { printf "%.0f", d/dt }')
+    fi
+    if ((tx >= prev_tx)); then
+        tx_rate=$(awk -v d="$((tx - prev_tx))" -v dt="$dt" 'BEGIN { printf "%.0f", d/dt }')
+    fi
 fi
 
 {
-  echo "prev_ts=$now"
-  echo "prev_rx=$rx"
-  echo "prev_tx=$tx"
-} > "$STATE_FILE"
+    echo "prev_ts=$now"
+    echo "prev_rx=$rx"
+    echo "prev_tx=$tx"
+} >"$STATE_FILE"
 
 printf '{"rx":%s,"tx":%s,"iface":"%s"}\n' "$rx_rate" "$tx_rate" "$iface"
