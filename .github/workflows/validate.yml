@@ -1,0 +1,37 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    container: archlinux:base
+
+    steps:
+      - name: Enable Omarchy package repo
+        run: |
+          printf '\n[omarchy]\nSigLevel = Optional TrustAll\nServer = https://pkgs.omarchy.org/stable/$arch\n' >> /etc/pacman.conf
+          pacman -Sy --noconfirm
+
+      # jq + qt6-declarative (qmllint) + quickshell-git (the Quickshell/Quickshell.Io
+      # QML modules the widget imports) — not the full `omarchy` meta-package, which
+      # also pulls in Hyprland, SDDM, snapper, and a bootloader.
+      - name: Install dependencies
+        run: pacman -S --noconfirm --needed git jq qt6-declarative quickshell-git
+
+      - uses: actions/checkout@v4
+
+      # Source of both the shell's QML modules (for qmllint's -I import path) and
+      # the omarchy-plugin-validate script the CLI itself uses, so this workflow
+      # checks the same rules `omarchy plugin validate` enforces on install.
+      - name: Fetch Omarchy shell source
+        run: git clone --depth 1 https://github.com/basecamp/omarchy.git /tmp/omarchy
+
+      - name: Validate manifest
+        run: bash /tmp/omarchy/bin/omarchy-plugin-validate "$GITHUB_WORKSPACE"
+
+      - name: qmllint
+        run: qmllint -I /tmp/omarchy/shell BarWidget.qml

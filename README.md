@@ -1,5 +1,9 @@
 # omaspeedmeter
 
+[![Omarchy 4.0+](https://img.shields.io/badge/Omarchy-4.0%2B-c6aa75?style=flat-square)](https://omarchy.org/manual/shell-plugins/)
+[![Validate](https://img.shields.io/github/actions/workflow/status/mt-shihab26/omaspeedmeter/validate.yml?branch=main&style=flat-square&label=validate)](https://github.com/mt-shihab26/omaspeedmeter/actions/workflows/validate.yml)
+[![MIT License](https://img.shields.io/badge/license-MIT-6aa6b2?style=flat-square)](LICENSE)
+
 Omarchy bar widget showing CPU, memory, network, temperature, GPU, and process count stats.
 
 Click the widget in the bar to open a settings popup where you can toggle
