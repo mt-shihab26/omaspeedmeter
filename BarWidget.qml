@@ -1,381 +1,478 @@
+import "Model.js" as Model
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import qs.Ui
 import qs.Commons
-import "Model.js" as Model
+import qs.Ui
 
 // Omaspeedmeter bar widget: CPU / memory / network / temperature / GPU /
 // process-count stats in the bar row, with a click popup to toggle each
 // metric and tweak the underlying settings (refresh interval, GPU vendor,
 // temperature source, network interface).
 Panel {
-  id: root
-  moduleName: "mt-shihab26.omaspeedmeter"
-  ipcTarget: moduleName
+    id: root
 
-  // Omarchy's own bar widgets (WidgetButton) each carry an 8.5px scaled
-  // horizontal margin either side; with zero spacing between modules in
-  // the bar row, two adjacent widgets end up 17px apart. Using that same
-  // raw value here (then run through Style.space() below, same as a
-  // user-entered gap) reproduces that spacing and keeps it theme-scaled.
-  readonly property var resolved: Model.resolvedSettings(root.settings, { gap: 17 })
-  property var stats: null
-  readonly property var segments: Model.buildSegments(root.settings, root.stats)
-
-  // Merges a single metric script's JSON output into root.stats, creating
-  // the object on first arrival. Reassigns (rather than mutates) so the
-  // `segments` binding above picks up the change.
-  function mergeStats(patch) {
-    var merged = {}
-    for (var k in root.stats) merged[k] = root.stats[k]
-    for (var k2 in patch) merged[k2] = patch[k2]
-    root.stats = merged
-  }
-  property string currentSection: ""
-  property var netIfaceOptions: [{ value: "auto", label: "auto" }]
-  property var tempZoneOptions: [{ value: "auto", label: "auto" }]
-
-  // The plugin's own directory, so the polling script can be found no
-  // matter where this plugin checkout/symlink lives.
-  readonly property string pluginDir: {
-    var u = Qt.resolvedUrl(".").toString()
-    return u.indexOf("file://") === 0 ? u.substring(7) : u
-  }
-
-  implicitWidth: row.implicitWidth + Style.space(16)
-  implicitHeight: bar ? bar.barSize : 26
-
-  function refresh() {
-    if (root.resolved.cpu && !cpuProc.running) cpuProc.running = true
-    if (root.resolved.mem && !memProc.running) memProc.running = true
-    if (root.resolved.net && !netProc.running) netProc.running = true
-    if (root.resolved.temp && !tempProc.running) tempProc.running = true
-    if (root.resolved.gpu && !gpuProc.running) gpuProc.running = true
-    if (root.resolved.procs && !procsProc.running) procsProc.running = true
-  }
-
-  function setSetting(key, value, isJson) {
-    var args = ["bar", "set", root.moduleName, key, String(value)]
-    if (isJson) args.push("--json")
-    setSettingProc.command = ["omarchy"].concat(args)
-    setSettingProc.running = true
-  }
-
-  Process {
-    id: setSettingProc
-    stdout: StdioCollector { waitForEnd: true }
-  }
-
-  function toggleMetric(key) {
-    root.setSetting(key, !root.resolved[key], true)
-  }
-
-  function refreshSection() {
-    if (!sectionProc.running) sectionProc.running = true
-  }
-
-  function setSection(section) {
-    root.currentSection = section
-    moveSectionProc.command = ["omarchy", "bar", "move", root.moduleName, "--section", section]
-    moveSectionProc.running = true
-  }
-
-  onOpenedChanged: {
-    if (!opened) return
-    root.refreshSection()
-    if (!netIfacesProc.running) netIfacesProc.running = true
-    if (!tempZonesProc.running) tempZonesProc.running = true
-  }
-
-  Process {
-    id: sectionProc
-    command: ["omarchy-shell", "shell", "listShellConfig"]
-    stdout: StdioCollector {
-      waitForEnd: true
-      onStreamFinished: root.currentSection = Model.findSection(text, root.moduleName) || root.currentSection
-    }
-  }
-
-  Process {
-    id: moveSectionProc
-    stdout: StdioCollector { waitForEnd: true }
-  }
-
-  Process {
-    id: netIfacesProc
-    command: ["bash", "-c", "ls /sys/class/net 2>/dev/null"]
-    stdout: StdioCollector {
-      waitForEnd: true
-      onStreamFinished: root.netIfaceOptions = Model.parseNetIfaces(text)
-    }
-  }
-
-  Process {
-    id: tempZonesProc
-    command: ["bash", "-c", "for f in /sys/class/thermal/thermal_zone*/type; do p=\"${f%/type}/temp\"; echo \"$p|$(cat \"$f\" 2>/dev/null)\"; done 2>/dev/null"]
-    stdout: StdioCollector {
-      waitForEnd: true
-      onStreamFinished: root.tempZoneOptions = Model.parseTempZones(text)
-    }
-  }
-
-  Component.onCompleted: refresh()
-
-  Timer {
-    interval: Math.max(1, root.resolved.interval) * 1000
-    running: true
-    repeat: true
-    triggeredOnStart: false
-    onTriggered: root.refresh()
-  }
-
-  Process {
-    id: cpuProc
-    command: [root.pluginDir + "bin/omaspeedmeter-cpu"]
-    stdout: StdioCollector {
-      waitForEnd: true
-      onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
-    }
-  }
-
-  Process {
-    id: memProc
-    command: [root.pluginDir + "bin/omaspeedmeter-mem"]
-    stdout: StdioCollector {
-      waitForEnd: true
-      onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
-    }
-  }
-
-  Process {
-    id: netProc
-    command: [root.pluginDir + "bin/omaspeedmeter-net", "--iface", root.resolved.netIface]
-    stdout: StdioCollector {
-      waitForEnd: true
-      onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
-    }
-  }
-
-  Process {
-    id: tempProc
-    command: [root.pluginDir + "bin/omaspeedmeter-temp", "--zone", root.resolved.tempZone]
-    stdout: StdioCollector {
-      waitForEnd: true
-      onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
-    }
-  }
-
-  Process {
-    id: gpuProc
-    command: [root.pluginDir + "bin/omaspeedmeter-gpu", "--vendor", root.resolved.gpuVendor]
-    stdout: StdioCollector {
-      waitForEnd: true
-      onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
-    }
-  }
-
-  Process {
-    id: procsProc
-    command: [root.pluginDir + "bin/omaspeedmeter-procs"]
-    stdout: StdioCollector {
-      waitForEnd: true
-      onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
-    }
-  }
-
-  Row {
-    id: row
-    anchors.centerIn: parent
-    spacing: Style.space(root.resolved.gap)
-
-    Repeater {
-      model: root.segments
-
-      Text {
-        required property var modelData
-        text: modelData.text
-        color: root.bar ? root.bar.foreground : Color.foreground
-        font.family: root.bar ? root.bar.fontFamily : Style.font.family
-        font.pixelSize: Style.font.body
-      }
+    // Omarchy's own bar widgets (WidgetButton) each carry an 8.5px scaled
+    // horizontal margin either side; with zero spacing between modules in
+    // the bar row, two adjacent widgets end up 17px apart. Using that same
+    // raw value here (then run through Style.space() below, same as a
+    // user-entered gap) reproduces that spacing and keeps it theme-scaled.
+    readonly property var resolved: Model.resolvedSettings(root.settings, {
+        "gap": 17
+    })
+    property var stats: null
+    readonly property var segments: Model.buildSegments(root.settings, root.stats)
+    property string currentSection: ""
+    property var netIfaceOptions: [{
+        "value": "auto",
+        "label": "auto"
+    }]
+    property var tempZoneOptions: [{
+        "value": "auto",
+        "label": "auto"
+    }]
+    // The plugin's own directory, so the polling script can be found no
+    // matter where this plugin checkout/symlink lives.
+    readonly property string pluginDir: {
+        var u = Qt.resolvedUrl(".").toString();
+        return u.indexOf("file://") === 0 ? u.substring(7) : u;
     }
 
-    // Shown when every metric is disabled, so the widget stays clickable
-    // instead of collapsing to nothing.
-    Text {
-      visible: root.segments.length === 0
-      text: "omaspeedmeter"
-      color: root.bar ? root.bar.foreground : Color.foreground
-      font.family: root.bar ? root.bar.fontFamily : Style.font.family
-      font.pixelSize: Style.font.body
+    // Merges a single metric script's JSON output into root.stats, creating
+    // the object on first arrival. Reassigns (rather than mutates) so the
+    // `segments` binding above picks up the change.
+    function mergeStats(patch) {
+        var merged = {
+        };
+        for (var k in root.stats) merged[k] = root.stats[k]
+        for (var k2 in patch) merged[k2] = patch[k2]
+        root.stats = merged;
     }
-  }
 
-  MouseArea {
-    anchors.fill: parent
-    cursorShape: Qt.PointingHandCursor
-    onClicked: root.toggle()
-  }
+    function refresh() {
+        if (root.resolved.cpu && !cpuProc.running)
+            cpuProc.running = true;
 
-  KeyboardPanel {
-    id: panel
-    anchorItem: root
-    owner: root
-    bar: root.bar
-    open: root.opened
-    contentWidth: panel.fittedContentWidth(Style.space(320))
-    contentHeight: panel.fittedContentHeight(settingsColumn.implicitHeight, Style.space(480))
+        if (root.resolved.mem && !memProc.running)
+            memProc.running = true;
 
-    Flickable {
-      anchors.fill: parent
-      contentWidth: width
-      contentHeight: settingsColumn.implicitHeight
-      clip: true
-      boundsBehavior: Flickable.StopAtBounds
+        if (root.resolved.net && !netProc.running)
+            netProc.running = true;
 
-      Column {
-        id: settingsColumn
-        width: parent.width
-        spacing: Style.space(10)
+        if (root.resolved.temp && !tempProc.running)
+            tempProc.running = true;
 
-        Text {
-          text: "Omaspeedmeter"
-          color: root.bar ? root.bar.foreground : Color.foreground
-          font.family: root.bar ? root.bar.fontFamily : Style.font.family
-          font.pixelSize: Style.font.title
-          font.bold: true
+        if (root.resolved.gpu && !gpuProc.running)
+            gpuProc.running = true;
+
+        if (root.resolved.procs && !procsProc.running)
+            procsProc.running = true;
+
+    }
+
+    function setSetting(key, value, isJson) {
+        var args = ["bar", "set", root.moduleName, key, String(value)];
+        if (isJson)
+            args.push("--json");
+
+        setSettingProc.command = ["omarchy"].concat(args);
+        setSettingProc.running = true;
+    }
+
+    function toggleMetric(key) {
+        root.setSetting(key, !root.resolved[key], true);
+    }
+
+    function refreshSection() {
+        if (!sectionProc.running)
+            sectionProc.running = true;
+
+    }
+
+    function setSection(section) {
+        root.currentSection = section;
+        moveSectionProc.command = ["omarchy", "bar", "move", root.moduleName, "--section", section];
+        moveSectionProc.running = true;
+    }
+
+    moduleName: "mt-shihab26.omaspeedmeter"
+    ipcTarget: moduleName
+    implicitWidth: row.implicitWidth + Style.space(16)
+    implicitHeight: bar ? bar.barSize : 26
+    onOpenedChanged: {
+        if (!opened)
+            return ;
+
+        root.refreshSection();
+        if (!netIfacesProc.running)
+            netIfacesProc.running = true;
+
+        if (!tempZonesProc.running)
+            tempZonesProc.running = true;
+
+    }
+    Component.onCompleted: refresh()
+
+    Process {
+        id: setSettingProc
+
+        stdout: StdioCollector {
+            waitForEnd: true
         }
 
-        PanelSeparator {
-          foreground: root.bar ? root.bar.foreground : Color.foreground
+    }
+
+    Process {
+        id: sectionProc
+
+        command: ["omarchy-shell", "shell", "listShellConfig"]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: root.currentSection = Model.findSection(text, root.moduleName) || root.currentSection
         }
 
-        PanelSectionHeader {
-          text: "METRICS"
-          foreground: root.bar ? root.bar.foreground : Color.foreground
-          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+    }
+
+    Process {
+        id: moveSectionProc
+
+        stdout: StdioCollector {
+            waitForEnd: true
         }
+
+    }
+
+    Process {
+        id: netIfacesProc
+
+        command: ["bash", "-c", "ls /sys/class/net 2>/dev/null"]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: root.netIfaceOptions = Model.parseNetIfaces(text)
+        }
+
+    }
+
+    Process {
+        id: tempZonesProc
+
+        command: ["bash", "-c", "for f in /sys/class/thermal/thermal_zone*/type; do p=\"${f%/type}/temp\"; echo \"$p|$(cat \"$f\" 2>/dev/null)\"; done 2>/dev/null"]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: root.tempZoneOptions = Model.parseTempZones(text)
+        }
+
+    }
+
+    Timer {
+        interval: Math.max(1, root.resolved.interval) * 1000
+        running: true
+        repeat: true
+        triggeredOnStart: false
+        onTriggered: root.refresh()
+    }
+
+    Process {
+        id: cpuProc
+
+        command: [root.pluginDir + "bin/omaspeedmeter-cpu"]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: root.mergeStats(Model.parseStats(text) || {
+            })
+        }
+
+    }
+
+    Process {
+        id: memProc
+
+        command: [root.pluginDir + "bin/omaspeedmeter-mem"]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: root.mergeStats(Model.parseStats(text) || {
+            })
+        }
+
+    }
+
+    Process {
+        id: netProc
+
+        command: [root.pluginDir + "bin/omaspeedmeter-net", "--iface", root.resolved.netIface]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: root.mergeStats(Model.parseStats(text) || {
+            })
+        }
+
+    }
+
+    Process {
+        id: tempProc
+
+        command: [root.pluginDir + "bin/omaspeedmeter-temp", "--zone", root.resolved.tempZone]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: root.mergeStats(Model.parseStats(text) || {
+            })
+        }
+
+    }
+
+    Process {
+        id: gpuProc
+
+        command: [root.pluginDir + "bin/omaspeedmeter-gpu", "--vendor", root.resolved.gpuVendor]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: root.mergeStats(Model.parseStats(text) || {
+            })
+        }
+
+    }
+
+    Process {
+        id: procsProc
+
+        command: [root.pluginDir + "bin/omaspeedmeter-procs"]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: root.mergeStats(Model.parseStats(text) || {
+            })
+        }
+
+    }
+
+    Row {
+        id: row
+
+        anchors.centerIn: parent
+        spacing: Style.space(root.resolved.gap)
 
         Repeater {
-          model: Model.METRICS
+            model: root.segments
 
-          Toggle {
-            required property var modelData
-            width: settingsColumn.width
-            label: modelData.icon + "  " + modelData.label
-            description: modelData.description || ""
-            checked: root.resolved[modelData.key] === true
-            foreground: root.bar ? root.bar.foreground : Color.foreground
-            fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-            onClicked: root.toggleMetric(modelData.key)
-          }
+            Text {
+                required property var modelData
+
+                text: modelData.text
+                color: root.bar ? root.bar.foreground : Color.foreground
+                font.family: root.bar ? root.bar.fontFamily : Style.font.family
+                font.pixelSize: Style.font.body
+            }
+
         }
 
-        Toggle {
-          width: settingsColumn.width
-          label: "Split network up/down"
-          description: "Separate download and upload"
-          checked: root.resolved.netSplit === true
-          foreground: root.bar ? root.bar.foreground : Color.foreground
-          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-          onClicked: root.toggleMetric("netSplit")
-        }
-
-        Toggle {
-          width: settingsColumn.width
-          label: "Show word labels"
-          description: "Show label instead of icon"
-          checked: root.resolved.labels === true
-          foreground: root.bar ? root.bar.foreground : Color.foreground
-          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-          onClicked: root.toggleMetric("labels")
-        }
-
-        PanelSeparator {
-          foreground: root.bar ? root.bar.foreground : Color.foreground
-        }
-
-        PanelSectionHeader {
-          text: "SETTINGS"
-          foreground: root.bar ? root.bar.foreground : Color.foreground
-          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-        }
-
-        Column {
-          width: settingsColumn.width
-          spacing: Style.space(4)
-
-          Text {
-            text: "Bar position"
-            color: Qt.darker(root.bar ? root.bar.foreground : Color.foreground, 1.4)
+        // Shown when every metric is disabled, so the widget stays clickable
+        // instead of collapsing to nothing.
+        Text {
+            visible: root.segments.length === 0
+            text: "omaspeedmeter"
+            color: root.bar ? root.bar.foreground : Color.foreground
             font.family: root.bar ? root.bar.fontFamily : Style.font.family
-            font.pixelSize: Style.font.caption
-          }
-
-          ButtonGroup {
-            options: ["left", "center", "right"]
-            value: root.currentSection
-            foreground: root.bar ? root.bar.foreground : Color.foreground
-            fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-            onChanged: function(v) { root.setSection(v) }
-          }
+            font.pixelSize: Style.font.body
         }
 
-        NumberField {
-          label: "Refresh interval (seconds)"
-          value: root.resolved.interval
-          from: 1
-          to: 60
-          stepSize: 1
-          foreground: root.bar ? root.bar.foreground : Color.foreground
-          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-          onModified: function(v) { root.setSetting("interval", v, true) }
-        }
-
-        NumberField {
-          label: "Segment spacing (pixels)"
-          value: root.resolved.gap
-          from: 0
-          to: 40
-          stepSize: 1
-          foreground: root.bar ? root.bar.foreground : Color.foreground
-          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-          onModified: function(v) { root.setSetting("gap", v, true) }
-        }
-
-        Dropdown {
-          label: "GPU vendor"
-          width: settingsColumn.width
-          value: root.resolved.gpuVendor
-          options: ["auto", "nvidia", "amd", "intel", "none"]
-          foreground: root.bar ? root.bar.foreground : Color.foreground
-          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-          onChanged: function(v) { root.setSetting("gpuVendor", v, false) }
-        }
-
-        Dropdown {
-          label: "Network interface"
-          width: settingsColumn.width
-          value: root.resolved.netIface
-          options: root.netIfaceOptions
-          foreground: root.bar ? root.bar.foreground : Color.foreground
-          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-          onChanged: function(v) { root.setSetting("netIface", v, false) }
-        }
-
-        Dropdown {
-          label: "Temperature source"
-          width: settingsColumn.width
-          value: root.resolved.tempZone
-          options: root.tempZoneOptions
-          foreground: root.bar ? root.bar.foreground : Color.foreground
-          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-          onChanged: function(v) { root.setSetting("tempZone", v, false) }
-        }
-
-        Item { width: 1; height: Style.space(4) }
-      }
     }
-  }
+
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+        onClicked: root.toggle()
+    }
+
+    KeyboardPanel {
+        id: panel
+
+        anchorItem: root
+        owner: root
+        bar: root.bar
+        open: root.opened
+        contentWidth: panel.fittedContentWidth(Style.space(320))
+        contentHeight: panel.fittedContentHeight(settingsColumn.implicitHeight, Style.space(480))
+
+        Flickable {
+            anchors.fill: parent
+            contentWidth: width
+            contentHeight: settingsColumn.implicitHeight
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+
+            Column {
+                id: settingsColumn
+
+                width: parent.width
+                spacing: Style.space(10)
+
+                Text {
+                    text: "Omaspeedmeter"
+                    color: root.bar ? root.bar.foreground : Color.foreground
+                    font.family: root.bar ? root.bar.fontFamily : Style.font.family
+                    font.pixelSize: Style.font.title
+                    font.bold: true
+                }
+
+                PanelSeparator {
+                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                }
+
+                PanelSectionHeader {
+                    text: "METRICS"
+                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                }
+
+                Repeater {
+                    model: Model.METRICS
+
+                    Toggle {
+                        required property var modelData
+
+                        width: settingsColumn.width
+                        label: modelData.icon + "  " + modelData.label
+                        description: modelData.description || ""
+                        checked: root.resolved[modelData.key] === true
+                        foreground: root.bar ? root.bar.foreground : Color.foreground
+                        fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                        onClicked: root.toggleMetric(modelData.key)
+                    }
+
+                }
+
+                Toggle {
+                    width: settingsColumn.width
+                    label: "Split network up/down"
+                    description: "Separate download and upload"
+                    checked: root.resolved.netSplit === true
+                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                    onClicked: root.toggleMetric("netSplit")
+                }
+
+                Toggle {
+                    width: settingsColumn.width
+                    label: "Show word labels"
+                    description: "Show label instead of icon"
+                    checked: root.resolved.labels === true
+                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                    onClicked: root.toggleMetric("labels")
+                }
+
+                PanelSeparator {
+                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                }
+
+                PanelSectionHeader {
+                    text: "SETTINGS"
+                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                }
+
+                Column {
+                    width: settingsColumn.width
+                    spacing: Style.space(4)
+
+                    Text {
+                        text: "Bar position"
+                        color: Qt.darker(root.bar ? root.bar.foreground : Color.foreground, 1.4)
+                        font.family: root.bar ? root.bar.fontFamily : Style.font.family
+                        font.pixelSize: Style.font.caption
+                    }
+
+                    ButtonGroup {
+                        options: ["left", "center", "right"]
+                        value: root.currentSection
+                        foreground: root.bar ? root.bar.foreground : Color.foreground
+                        fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                        onChanged: function(v) {
+                            root.setSection(v);
+                        }
+                    }
+
+                }
+
+                NumberField {
+                    label: "Refresh interval (seconds)"
+                    value: root.resolved.interval
+                    from: 1
+                    to: 60
+                    stepSize: 1
+                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                    onModified: function(v) {
+                        root.setSetting("interval", v, true);
+                    }
+                }
+
+                NumberField {
+                    label: "Segment spacing (pixels)"
+                    value: root.resolved.gap
+                    from: 0
+                    to: 40
+                    stepSize: 1
+                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                    onModified: function(v) {
+                        root.setSetting("gap", v, true);
+                    }
+                }
+
+                Dropdown {
+                    label: "GPU vendor"
+                    width: settingsColumn.width
+                    value: root.resolved.gpuVendor
+                    options: ["auto", "nvidia", "amd", "intel", "none"]
+                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                    onChanged: function(v) {
+                        root.setSetting("gpuVendor", v, false);
+                    }
+                }
+
+                Dropdown {
+                    label: "Network interface"
+                    width: settingsColumn.width
+                    value: root.resolved.netIface
+                    options: root.netIfaceOptions
+                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                    onChanged: function(v) {
+                        root.setSetting("netIface", v, false);
+                    }
+                }
+
+                Dropdown {
+                    label: "Temperature source"
+                    width: settingsColumn.width
+                    value: root.resolved.tempZone
+                    options: root.tempZoneOptions
+                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                    onChanged: function(v) {
+                        root.setSetting("tempZone", v, false);
+                    }
+                }
+
+                Item {
+                    width: 1
+                    height: Style.space(4)
+                }
+
+            }
+
+        }
+
+    }
+
 }

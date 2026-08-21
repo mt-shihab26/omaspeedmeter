@@ -34,15 +34,31 @@
             { "key": "net", "type": "boolean", "label": "Show network speed" },
             { "key": "temp", "type": "boolean", "label": "Show temperature" },
             { "key": "gpu", "type": "boolean", "label": "Show GPU %" },
-            { "key": "procs", "type": "boolean", "label": "Show process count" },
-            { "key": "labels", "type": "boolean", "label": "Show word labels next to icons" },
+            {
+                "key": "procs",
+                "type": "boolean",
+                "label": "Show process count"
+            },
+            {
+                "key": "labels",
+                "type": "boolean",
+                "label": "Show word labels next to icons"
+            },
             {
                 "key": "netSplit",
                 "type": "boolean",
                 "label": "Show download/upload as separate segments"
             },
-            { "key": "interval", "type": "number", "label": "Refresh interval (seconds)" },
-            { "key": "gap", "type": "number", "label": "Segment spacing (pixels)" },
+            {
+                "key": "interval",
+                "type": "number",
+                "label": "Refresh interval (seconds)"
+            },
+            {
+                "key": "gap",
+                "type": "number",
+                "label": "Segment spacing (pixels)"
+            },
             {
                 "key": "gpuVendor",
                 "type": "string",
@@ -53,7 +69,11 @@
                 "type": "string",
                 "label": "Temperature source (auto or /sys path)"
             },
-            { "key": "netIface", "type": "string", "label": "Network interface (auto or name)" }
+            {
+                "key": "netIface",
+                "type": "string",
+                "label": "Network interface (auto or name)"
+            }
         ]
     }
 }

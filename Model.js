@@ -5,12 +5,37 @@
 // Font variant bundles (Omarchy ships one as the bar's monospace family),
 // so they render the same way the built-in bar icons do.
 var METRICS = [
-    { key: "net", label: "NET", icon: "", description: "Download/upload speed" }, // fa-exchange (up/down)
-    { key: "cpu", label: "CPU", icon: "", description: "CPU usage percentage" }, // oct-cpu
+    {
+        key: "net",
+        label: "NET",
+        icon: "",
+        description: "Download/upload speed",
+    }, // fa-exchange (up/down)
+    {
+        key: "cpu",
+        label: "CPU",
+        icon: "",
+        description: "CPU usage percentage",
+    }, // oct-cpu
     { key: "temp", label: "TEMP", icon: "", description: "CPU temperature" }, // fa-thermometer-half
-    { key: "mem", label: "MEM", icon: "", description: "Memory usage percentage" }, // fa-memory
-    { key: "gpu", label: "GPU", icon: "󰢮", description: "GPU usage percentage" }, // md-expansion_card
-    { key: "procs", label: "PROC", icon: "", description: "Running process count" }, // fa-tasks
+    {
+        key: "mem",
+        label: "MEM",
+        icon: "",
+        description: "Memory usage percentage",
+    }, // fa-memory
+    {
+        key: "gpu",
+        label: "GPU",
+        icon: "󰢮",
+        description: "GPU usage percentage",
+    }, // md-expansion_card
+    {
+        key: "procs",
+        label: "PROC",
+        icon: "",
+        description: "Running process count",
+    }, // fa-tasks
 ];
 
 var NET_DOWN_ICON = ""; // fa-download
@@ -65,7 +90,8 @@ function resolvedSettings(settings, dynamicDefaults) {
     var out = {};
     for (var k in d) {
         if (typeof d[k] === "boolean") out[k] = boolSetting(settings, k, d[k]);
-        else if (typeof d[k] === "number") out[k] = numberSetting(settings, k, d[k]);
+        else if (typeof d[k] === "number")
+            out[k] = numberSetting(settings, k, d[k]);
         else out[k] = stringSetting(settings, k, d[k]);
     }
     return out;
@@ -115,7 +141,8 @@ function buildSegments(settings, stats) {
     var segments = [];
 
     function metric(key) {
-        for (var i = 0; i < METRICS.length; i++) if (METRICS[i].key === key) return METRICS[i];
+        for (var i = 0; i < METRICS.length; i++)
+            if (METRICS[i].key === key) return METRICS[i];
         return null;
     }
 
@@ -133,9 +160,14 @@ function buildSegments(settings, stats) {
                 key: "net-down",
                 text: (labels ? "DOWN " : NET_DOWN_ICON + " ") + down,
             });
-            segments.push({ key: "net-up", text: (labels ? "UP " : NET_UP_ICON + " ") + up });
+            segments.push({
+                key: "net-up",
+                text: (labels ? "UP " : NET_UP_ICON + " ") + up,
+            });
         } else {
-            var total = stats ? formatRate((Number(stats.rx) || 0) + (Number(stats.tx) || 0)) : "…";
+            var total = stats
+                ? formatRate((Number(stats.rx) || 0) + (Number(stats.tx) || 0))
+                : "…";
             push("net", total);
         }
     }
@@ -200,8 +232,13 @@ function parseTempZones(text) {
         var path = lines[i].slice(0, sep).trim();
         var type = lines[i].slice(sep + 1).trim();
         if (!path) continue;
-        var zoneName = path.replace("/sys/class/thermal/", "").replace("/temp", "");
-        out.push({ value: path, label: (type || zoneName) + " (" + zoneName + ")" });
+        var zoneName = path
+            .replace("/sys/class/thermal/", "")
+            .replace("/temp", "");
+        out.push({
+            value: path,
+            label: (type || zoneName) + " (" + zoneName + ")",
+        });
     }
     return out;
 }
