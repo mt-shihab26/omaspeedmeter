@@ -15,7 +15,7 @@ all without editing config files by hand.
 <table>
 <tr>
 <td><img src="preview.png" width="100%" alt="Omaspeedmeter bar widget preview"></td>
-<td><video src="https://github.com/user-attachments/assets/0743feb3-6452-4608-bf96-f9ca24336373" width="100%" controls></video></td>
+<td><video src="https://github.com/user-attachments/assets/61c83f7d-98f9-4b38-8a60-5e8d97d5fa49" width="100%" controls></video></td>
 </tr>
 </table>
 
