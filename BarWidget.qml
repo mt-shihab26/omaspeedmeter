@@ -23,18 +23,14 @@ Panel {
     property var stats: null
     readonly property var segments: Model.buildSegments(root.settings, root.stats)
     property string currentSection: ""
-    property var netIfaceOptions: [
-        {
-            "value": "auto",
-            "label": "auto"
-        }
-    ]
-    property var tempZoneOptions: [
-        {
-            "value": "auto",
-            "label": "auto"
-        }
-    ]
+    property var netIfaceOptions: [{
+        "value": "auto",
+        "label": "auto"
+    }]
+    property var tempZoneOptions: [{
+        "value": "auto",
+        "label": "auto"
+    }]
     // The plugin's own directory, so the polling script can be found no
     // matter where this plugin checkout/symlink lives.
     readonly property string pluginDir: {
@@ -46,11 +42,10 @@ Panel {
     // the object on first arrival. Reassigns (rather than mutates) so the
     // `segments` binding above picks up the change.
     function mergeStats(patch) {
-        var merged = {};
-        for (var k in root.stats)
-            merged[k] = root.stats[k];
-        for (var k2 in patch)
-            merged[k2] = patch[k2];
+        var merged = {
+        };
+        for (var k in root.stats) merged[k] = root.stats[k]
+        for (var k2 in patch) merged[k2] = patch[k2]
         root.stats = merged;
     }
 
@@ -72,6 +67,7 @@ Panel {
 
         if (root.resolved.procs && !procsProc.running)
             procsProc.running = true;
+
     }
 
     function setSetting(key, value, isJson) {
@@ -90,6 +86,7 @@ Panel {
     function refreshSection() {
         if (!sectionProc.running)
             sectionProc.running = true;
+
     }
 
     function setSection(section) {
@@ -104,7 +101,7 @@ Panel {
     implicitHeight: bar ? bar.barSize : 26
     onOpenedChanged: {
         if (!opened)
-            return;
+            return ;
 
         root.refreshSection();
         if (!netIfacesProc.running)
@@ -112,6 +109,7 @@ Panel {
 
         if (!tempZonesProc.running)
             tempZonesProc.running = true;
+
     }
     Component.onCompleted: refresh()
 
@@ -121,6 +119,7 @@ Panel {
         stdout: StdioCollector {
             waitForEnd: true
         }
+
     }
 
     Process {
@@ -132,6 +131,7 @@ Panel {
             waitForEnd: true
             onStreamFinished: root.currentSection = Model.findSection(text, root.moduleName) || root.currentSection
         }
+
     }
 
     Process {
@@ -140,6 +140,7 @@ Panel {
         stdout: StdioCollector {
             waitForEnd: true
         }
+
     }
 
     Process {
@@ -151,6 +152,7 @@ Panel {
             waitForEnd: true
             onStreamFinished: root.netIfaceOptions = Model.parseNetIfaces(text)
         }
+
     }
 
     Process {
@@ -162,6 +164,7 @@ Panel {
             waitForEnd: true
             onStreamFinished: root.tempZoneOptions = Model.parseTempZones(text)
         }
+
     }
 
     Timer {
@@ -179,8 +182,10 @@ Panel {
 
         stdout: StdioCollector {
             waitForEnd: true
-            onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
+            onStreamFinished: root.mergeStats(Model.parseStats(text) || {
+            })
         }
+
     }
 
     Process {
@@ -190,8 +195,10 @@ Panel {
 
         stdout: StdioCollector {
             waitForEnd: true
-            onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
+            onStreamFinished: root.mergeStats(Model.parseStats(text) || {
+            })
         }
+
     }
 
     Process {
@@ -201,8 +208,10 @@ Panel {
 
         stdout: StdioCollector {
             waitForEnd: true
-            onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
+            onStreamFinished: root.mergeStats(Model.parseStats(text) || {
+            })
         }
+
     }
 
     Process {
@@ -212,8 +221,10 @@ Panel {
 
         stdout: StdioCollector {
             waitForEnd: true
-            onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
+            onStreamFinished: root.mergeStats(Model.parseStats(text) || {
+            })
         }
+
     }
 
     Process {
@@ -223,8 +234,10 @@ Panel {
 
         stdout: StdioCollector {
             waitForEnd: true
-            onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
+            onStreamFinished: root.mergeStats(Model.parseStats(text) || {
+            })
         }
+
     }
 
     Process {
@@ -234,8 +247,10 @@ Panel {
 
         stdout: StdioCollector {
             waitForEnd: true
-            onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
+            onStreamFinished: root.mergeStats(Model.parseStats(text) || {
+            })
         }
+
     }
 
     Row {
@@ -255,6 +270,7 @@ Panel {
                 font.family: root.bar ? root.bar.fontFamily : Style.font.family
                 font.pixelSize: Style.font.body
             }
+
         }
 
         // Shown when every metric is disabled, so the widget stays clickable
@@ -266,6 +282,7 @@ Panel {
             font.family: root.bar ? root.bar.fontFamily : Style.font.family
             font.pixelSize: Style.font.body
         }
+
     }
 
     MouseArea {
@@ -329,6 +346,7 @@ Panel {
                         fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                         onClicked: root.toggleMetric(modelData.key)
                     }
+
                 }
 
                 Toggle {
@@ -377,10 +395,11 @@ Panel {
                         value: root.currentSection
                         foreground: root.bar ? root.bar.foreground : Color.foreground
                         fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-                        onChanged: function (v) {
+                        onChanged: function(v) {
                             root.setSection(v);
                         }
                     }
+
                 }
 
                 NumberField {
@@ -391,7 +410,7 @@ Panel {
                     stepSize: 1
                     foreground: root.bar ? root.bar.foreground : Color.foreground
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-                    onModified: function (v) {
+                    onModified: function(v) {
                         root.setSetting("interval", v, true);
                     }
                 }
@@ -404,7 +423,7 @@ Panel {
                     stepSize: 1
                     foreground: root.bar ? root.bar.foreground : Color.foreground
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-                    onModified: function (v) {
+                    onModified: function(v) {
                         root.setSetting("gap", v, true);
                     }
                 }
@@ -416,7 +435,7 @@ Panel {
                     options: ["auto", "nvidia", "amd", "intel", "none"]
                     foreground: root.bar ? root.bar.foreground : Color.foreground
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-                    onChanged: function (v) {
+                    onChanged: function(v) {
                         root.setSetting("gpuVendor", v, false);
                     }
                 }
@@ -428,7 +447,7 @@ Panel {
                     options: root.netIfaceOptions
                     foreground: root.bar ? root.bar.foreground : Color.foreground
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-                    onChanged: function (v) {
+                    onChanged: function(v) {
                         root.setSetting("netIface", v, false);
                     }
                 }
@@ -440,7 +459,7 @@ Panel {
                     options: root.tempZoneOptions
                     foreground: root.bar ? root.bar.foreground : Color.foreground
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-                    onChanged: function (v) {
+                    onChanged: function(v) {
                         root.setSetting("tempZone", v, false);
                     }
                 }
@@ -449,7 +468,11 @@ Panel {
                     width: 1
                     height: Style.space(4)
                 }
+
             }
+
         }
+
     }
+
 }

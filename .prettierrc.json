@@ -1,0 +1,12 @@
+{
+    "tabWidth": 4,
+    "arrowParens": "avoid",
+    "overrides": [
+        {
+            "files": ".github/**/*.yml",
+            "options": {
+                "tabWidth": 2
+            }
+        }
+    ]
+}

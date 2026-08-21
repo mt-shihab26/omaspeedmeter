@@ -1,8 +1,10 @@
 #!/bin/bash
+
+set -euo pipefail
+
 # Symlinks ~/.config/omarchy/plugins/omaspeedmeter to this repo, so Omarchy
 # picks up the plugin directly from the working tree during development.
 # Pass --remove to unlink instead.
-set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 repo_dir="$(pwd)"
