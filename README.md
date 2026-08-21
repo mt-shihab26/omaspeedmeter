@@ -12,26 +12,24 @@ source, combined vs. split up/down network display, word labels).
 - `Model.js` — pure formatting/settings helpers (no Quickshell runtime needed)
 - `bin/omarchy-sysmon-stats` — bash script that samples `/proc`, `/sys`, and
   optionally `nvidia-smi` / `intel_gpu_top`, printing one JSON line per call
-- `install.sh` — syncs this directory into
-  `~/.config/omarchy/plugins/shihab.sysmon/` and reloads the shell
 
 ## Development
 
-Edit files here, then run:
+This directory lives directly under `~/.config/omarchy/plugins/` and is
+picked up in place — no separate install/copy step. Edit files here, then
+reload:
 
 ```bash
-./install.sh
+omarchy restart shell
 ```
 
-This copies the project into Omarchy's plugin directory and reloads it.
-**A real copy, not a symlink** — the Omarchy shell's plugin file-watcher (and
-`omarchy plugin validate`) doesn't reliably follow a symlinked plugin
-directory, so editing the symlink target in place does not reload cleanly.
+A plain `omarchy-shell shell rescanPlugins` can leave a stale compiled copy
+of an already-loaded widget in memory, so a full shell restart is the
+reliable way to pick up changes here.
 
 First time only:
 
 ```bash
-./install.sh
 omarchy plugin enable shihab.sysmon
 omarchy bar move shihab.sysmon --section right   # or left/center
 ```
@@ -47,7 +45,7 @@ omarchy bar set shihab.sysmon <key> <value> --json
 
 | Key | Type | Default | Meaning |
 |---|---|---|---|
-| `cpu`, `mem`, `net`, `temp`, `gpu`, `procs` | boolean | `true`/`true`/`true`/`true`/`true`/`false` | show/hide each metric |
+| `cpu`, `mem`, `net`, `temp`, `gpu`, `procs` | boolean | `true`/`true`/`true`/`false`/`false`/`false` | show/hide each metric |
 | `labels` | boolean | `false` | prefix each segment with a word label |
 | `netSplit` | boolean | `false` | show download/upload as two segments instead of one combined one |
 | `interval` | number | `2` | poll interval in seconds |

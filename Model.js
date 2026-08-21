@@ -9,7 +9,7 @@ var METRICS = [
   { key: "mem", label: "MEM", icon: "" },     // fa-memory
   { key: "net", label: "NET", icon: "" },     // fa-exchange (up/down)
   { key: "temp", label: "TEMP", icon: "" },   // fa-thermometer-half
-  { key: "gpu", label: "GPU", icon: "" },     // fa-microchip
+  { key: "gpu", label: "GPU", icon: "󰢮" },     // md-expansion_card
   { key: "procs", label: "PROC", icon: "" }   // fa-tasks
 ];
 
@@ -23,8 +23,8 @@ function defaultSettings() {
     cpu: true,
     mem: true,
     net: true,
-    temp: true,
-    gpu: true,
+    temp: false,
+    gpu: false,
     procs: false,
     labels: false,
     netSplit: false,
