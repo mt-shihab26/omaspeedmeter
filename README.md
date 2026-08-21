@@ -22,7 +22,12 @@ source, combined vs. split up/down network display, word labels).
 
 ```bash
 omarchy plugin add https://github.com/mt-shihab26/omaspeedmeter.git --enable
-omarchy bar move mt-shihab26.omaspeedmeter --section right   # or left/center
+```
+
+Lands in the right section of the bar by default; move it with:
+
+```bash
+omarchy bar move mt-shihab26.omaspeedmeter --section left   # or center/right
 ```
 
 To remove it:
@@ -49,7 +54,6 @@ First time only:
 
 ```bash
 omarchy plugin enable mt-shihab26.omaspeedmeter
-omarchy bar move mt-shihab26.omaspeedmeter --section right   # or left/center
 ```
 
 ## Settings
