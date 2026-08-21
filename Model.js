@@ -5,10 +5,10 @@
 // Font variant bundles (Omarchy ships one as the bar's monospace family),
 // so they render the same way the built-in bar icons do.
 var METRICS = [  
-  { key: "cpu", label: "CPU", icon: "" },     // oct-cpu
-  { key: "mem", label: "MEM", icon: "" },     // fa-memory
   { key: "net", label: "NET", icon: "" },     // fa-exchange (up/down)
+  { key: "cpu", label: "CPU", icon: "" },     // oct-cpu
   { key: "temp", label: "TEMP", icon: "" },   // fa-thermometer-half
+  { key: "mem", label: "MEM", icon: "" },     // fa-memory
   { key: "gpu", label: "GPU", icon: "󰢮" },     // md-expansion_card
   { key: "procs", label: "PROC", icon: "" }   // fa-tasks
 ];
@@ -120,9 +120,6 @@ function buildSegments(settings, stats) {
     segments.push({ key: key, text: prefix + valueText })
   }
 
-  if (s.cpu) push("cpu", stats ? formatPct(stats.cpu) : "…")
-  if (s.temp) push("temp", stats ? formatTemp(stats.temp) : "…")
-  if (s.mem) push("mem", stats ? formatPct(stats.mem) : "…")
   if (s.net) {
     if (s.netSplit) {
       var down = stats ? formatRate(stats.rx) : "…"
@@ -134,6 +131,9 @@ function buildSegments(settings, stats) {
       push("net", total)
     }
   }
+  if (s.cpu) push("cpu", stats ? formatPct(stats.cpu) : "…")
+  if (s.temp) push("temp", stats ? formatTemp(stats.temp) : "…")
+  if (s.mem) push("mem", stats ? formatPct(stats.mem) : "…")
   if (s.gpu) push("gpu", stats ? formatPct(stats.gpu) : "…")
   if (s.procs) push("procs", stats ? String(stats.procs) : "…")
 
@@ -164,6 +164,36 @@ function findSection(configText, moduleName) {
   return null
 }
 
+// Turns `ls /sys/class/net` output into Dropdown options, always leading
+// with "auto" (loopback is skipped — never a useful network-speed source).
+function parseNetIfaces(text) {
+  var out = [{ value: "auto", label: "auto" }]
+  var lines = String(text || "").trim().split("\n")
+  for (var i = 0; i < lines.length; i++) {
+    var name = lines[i].trim()
+    if (!name || name === "lo") continue
+    out.push({ value: name, label: name })
+  }
+  return out
+}
+
+// Turns "<temp-path>|<zone-type>" lines (one per thermal zone) into Dropdown
+// options, always leading with "auto".
+function parseTempZones(text) {
+  var out = [{ value: "auto", label: "auto" }]
+  var lines = String(text || "").trim().split("\n")
+  for (var i = 0; i < lines.length; i++) {
+    var sep = lines[i].indexOf("|")
+    if (sep < 0) continue
+    var path = lines[i].slice(0, sep).trim()
+    var type = lines[i].slice(sep + 1).trim()
+    if (!path) continue
+    var zoneName = path.replace("/sys/class/thermal/", "").replace("/temp", "")
+    out.push({ value: path, label: (type || zoneName) + " (" + zoneName + ")" })
+  }
+  return out
+}
+
 if (typeof module !== "undefined") {
   module.exports = {
     METRICS: METRICS,
@@ -179,6 +209,8 @@ if (typeof module !== "undefined") {
     formatTemp: formatTemp,
     formatRate: formatRate,
     buildSegments: buildSegments,
-    findSection: findSection
+    findSection: findSection,
+    parseNetIfaces: parseNetIfaces,
+    parseTempZones: parseTempZones
   }
 }

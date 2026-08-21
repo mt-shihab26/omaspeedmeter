@@ -18,6 +18,8 @@ Panel {
   property var stats: null
   readonly property var segments: Model.buildSegments(root.settings, root.stats)
   property string currentSection: ""
+  property var netIfaceOptions: [{ value: "auto", label: "auto" }]
+  property var tempZoneOptions: [{ value: "auto", label: "auto" }]
 
   // The plugin's own directory, so the polling script can be found no
   // matter where this plugin checkout/symlink lives.
@@ -59,7 +61,12 @@ Panel {
     moveSectionProc.running = true
   }
 
-  onOpenedChanged: if (opened) root.refreshSection()
+  onOpenedChanged: {
+    if (!opened) return
+    root.refreshSection()
+    if (!netIfacesProc.running) netIfacesProc.running = true
+    if (!tempZonesProc.running) tempZonesProc.running = true
+  }
 
   Process {
     id: sectionProc
@@ -73,6 +80,24 @@ Panel {
   Process {
     id: moveSectionProc
     stdout: StdioCollector { waitForEnd: true }
+  }
+
+  Process {
+    id: netIfacesProc
+    command: ["bash", "-c", "ls /sys/class/net 2>/dev/null"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: root.netIfaceOptions = Model.parseNetIfaces(text)
+    }
+  }
+
+  Process {
+    id: tempZonesProc
+    command: ["bash", "-c", "for f in /sys/class/thermal/thermal_zone*/type; do p=\"${f%/type}/temp\"; echo \"$p|$(cat \"$f\" 2>/dev/null)\"; done 2>/dev/null"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: root.tempZoneOptions = Model.parseTempZones(text)
+    }
   }
 
   Component.onCompleted: refresh()
@@ -257,55 +282,24 @@ Panel {
           onChanged: function(v) { root.setSetting("gpuVendor", v, false) }
         }
 
-        Column {
+        Dropdown {
+          label: "Network interface"
           width: settingsColumn.width
-          spacing: Style.space(4)
-
-          Text {
-            text: "Network interface"
-            color: Qt.darker(root.bar ? root.bar.foreground : Color.foreground, 1.4)
-            font.family: root.bar ? root.bar.fontFamily : Style.font.family
-            font.pixelSize: Style.font.caption
-          }
-
-          TextField {
-            id: ifaceField
-            width: parent.width
-            text: root.resolved.netIface
-            placeholderText: "auto"
-            foreground: root.bar ? root.bar.foreground : Color.foreground
-            onEditingFinished: root.setSetting("netIface", ifaceField.text.trim() || "auto", false)
-          }
+          value: root.resolved.netIface
+          options: root.netIfaceOptions
+          foreground: root.bar ? root.bar.foreground : Color.foreground
+          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+          onChanged: function(v) { root.setSetting("netIface", v, false) }
         }
 
-        Column {
+        Dropdown {
+          label: "Temperature source"
           width: settingsColumn.width
-          spacing: Style.space(4)
-
-          Text {
-            text: "Temperature source"
-            color: Qt.darker(root.bar ? root.bar.foreground : Color.foreground, 1.4)
-            font.family: root.bar ? root.bar.fontFamily : Style.font.family
-            font.pixelSize: Style.font.caption
-          }
-
-          Text {
-            text: "auto, or a /sys/class/thermal/thermal_zoneN/temp path"
-            color: Qt.darker(root.bar ? root.bar.foreground : Color.foreground, 1.6)
-            font.family: root.bar ? root.bar.fontFamily : Style.font.family
-            font.pixelSize: Style.font.caption
-            wrapMode: Text.WordWrap
-            width: parent.width
-          }
-
-          TextField {
-            id: tempField
-            width: parent.width
-            text: root.resolved.tempZone
-            placeholderText: "auto"
-            foreground: root.bar ? root.bar.foreground : Color.foreground
-            onEditingFinished: root.setSetting("tempZone", tempField.text.trim() || "auto", false)
-          }
+          value: root.resolved.tempZone
+          options: root.tempZoneOptions
+          foreground: root.bar ? root.bar.foreground : Color.foreground
+          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+          onChanged: function(v) { root.setSetting("tempZone", v, false) }
         }
 
         Item { width: 1; height: Style.space(4) }

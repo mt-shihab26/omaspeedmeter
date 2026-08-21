@@ -95,13 +95,23 @@ if [[ "$TEMP_ZONE" != "none" ]]; then
   if [[ -n "$TEMP_ZONE" && "$TEMP_ZONE" != "auto" && -r "$TEMP_ZONE" ]]; then
     temp_path="$TEMP_ZONE"
   else
+    # Prefer a zone whose type identifies it as the CPU package/core sensor.
+    # Falling back to "whichever zone reads hottest" can pick a GPU, NVMe,
+    # or wifi zone on machines where those run hotter than the CPU.
     best=-1
+    cpu_path=""
     for zone in /sys/class/thermal/thermal_zone*/temp; do
       [[ -r "$zone" ]] || continue
       v=$(<"$zone")
       [[ "$v" =~ ^[0-9]+$ ]] || continue
       if (( v > best )); then best=$v; temp_path="$zone"; fi
+      if [[ -z "$cpu_path" ]]; then
+        ztype=""
+        [[ -r "${zone%/temp}/type" ]] && ztype=$(<"${zone%/temp}/type")
+        [[ "$ztype" =~ ^(x86_pkg_temp|coretemp|k10temp|cpu_thermal|cpu-thermal)$ ]] && cpu_path="$zone"
+      fi
     done
+    [[ -n "$cpu_path" ]] && temp_path="$cpu_path"
   fi
   if [[ -n "$temp_path" && -r "$temp_path" ]]; then
     raw=$(<"$temp_path")
