@@ -1,10 +1,10 @@
-# omaspeedmeter
+# [Omaspeedmeter](https://omarchyplugins.com/plugin.html?id=mt-shihab26.omaspeedmeter)
 
 [![Omarchy 4.0+](https://img.shields.io/badge/Omarchy-4.0%2B-c6aa75?style=flat-square)](https://omarchy.org/manual/shell-plugins/)
 [![Validate](https://img.shields.io/github/actions/workflow/status/mt-shihab26/omaspeedmeter/validate.yml?branch=main&style=flat-square&label=validate)](https://github.com/mt-shihab26/omaspeedmeter/actions/workflows/validate.yml)
 [![MIT License](https://img.shields.io/badge/license-MIT-6aa6b2?style=flat-square)](LICENSE)
 
-Omarchy bar widget showing CPU, memory, network, temperature, GPU, and process count stats.
+[Omarchy](https://omarchy.org/) bar widget showing CPU, memory, network, temperature, GPU, and process count stats.
 
 Click the widget in the bar to open a settings popup where you can toggle
 metrics, split network into up/down segments, switch icons for word labels,
@@ -31,20 +31,24 @@ To remove it:
 omarchy plugin remove mt-shihab26.omaspeedmeter
 ```
 
+See the [Omarchy plugin manual](https://omarchy.org/manual/shell-plugins/) for
+more on `omarchy plugin` commands.
+
 ## Metrics
 
-| Metric  | Icon | Source                                      | Notes                                  |
-| ------- | :--: | ------------------------------------------- | -------------------------------------- |
-| Network |      | `/sys/class/net/<iface>/statistics/*_bytes` | Combined or split into download/upload |
-| CPU     |      | `/proc/stat`                                | Usage % since the previous poll        |
-| Temp    |      | `/sys/class/thermal/thermal_zone*/temp`     | Prefers the CPU package/core sensor    |
-| Memory  |      | `/proc/meminfo`                             | `(MemTotal - MemAvailable) / MemTotal` |
-| GPU     |  󰢮   | `nvidia-smi`, sysfs, or `intel_gpu_top`     | Vendor auto-detected                   |
-| Procs   |      | `/proc/[0-9]*`                              | Count of running process directories   |
+| Metric  | Icon | Source                                                                                                                                              | Notes                                  |
+| ------- | :--: | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| Network |      | [`/sys/class/net/<iface>/statistics/*_bytes`](https://docs.kernel.org/networking/statistics.html)                                                   | Combined or split into download/upload |
+| CPU     |      | [`/proc/stat`](https://man7.org/linux/man-pages/man5/proc_stat.5.html)                                                                              | Usage % since the previous poll        |
+| Temp    |      | [`/sys/class/thermal/thermal_zone*/temp`](https://docs.kernel.org/driver-api/thermal/sysfs-api.html)                                                | Prefers the CPU package/core sensor    |
+| Memory  |      | [`/proc/meminfo`](https://man7.org/linux/man-pages/man5/proc_meminfo.5.html)                                                                        | `(MemTotal - MemAvailable) / MemTotal` |
+| GPU     |  󰢮   | [`nvidia-smi`](https://docs.nvidia.com/deploy/nvidia-smi/index.html), sysfs, or [`intel_gpu_top`](https://man.archlinux.org/man/intel_gpu_top.1.en) | Vendor auto-detected                   |
+| Procs   |      | [`/proc/[0-9]*`](https://man7.org/linux/man-pages/man5/proc.5.html)                                                                                 | Count of running process directories   |
 
-Icons come from the Nerd Font glyph set Omarchy already ships for the bar, so
-they render consistently with the built-in widgets. Enable **word labels** in
-the settings popup to show `CPU`, `MEM`, etc. instead.
+Icons come from the [Nerd Font](https://www.nerdfonts.com/) glyph set Omarchy
+already ships for the bar, so they render consistently with the built-in
+widgets. Enable **word labels** in the settings popup to show `CPU`, `MEM`,
+etc. instead.
 
 CPU and network are rate-based and need two polls to produce a real number,
 so they show `…` for the first tick after the widget loads or after the
@@ -53,7 +57,7 @@ refresh interval changes.
 ## Settings
 
 All settings are toggled/edited from the bar widget's click popup, and are
-persisted via `omarchy bar set`.
+persisted via [`omarchy bar set`](https://omarchy.org/manual/the-top-bar/).
 
 | Setting     | Default | Description                                                                    |
 | ----------- | ------- | ------------------------------------------------------------------------------ |
@@ -74,34 +78,50 @@ persisted via `omarchy bar set`.
 `auto` for GPU vendor and temperature zone probes the system on each poll;
 pinning a specific value skips detection and avoids picking the wrong sensor
 on machines with multiple thermal zones or GPUs. The network interface and
-temperature zone dropdowns are populated live from `/sys/class/net` and
-`/sys/class/thermal` when the popup opens.
+temperature zone dropdowns are populated live from
+[`/sys/class/net`](https://docs.kernel.org/networking/statistics.html) and
+[`/sys/class/thermal`](https://docs.kernel.org/driver-api/thermal/sysfs-api.html)
+when the popup opens.
 
 The bar position dropdown (left/center/right) reads and writes the widget's
-placement via `omarchy-shell`/`omarchy bar move`, independent of the
-`defaultSection` set on first install.
+placement via [`omarchy-shell`](https://omarchy.org/manual/omarchy-cli/)/
+[`omarchy bar move`](https://omarchy.org/manual/the-top-bar/), independent of
+the `defaultSection` set on first install.
 
 ## How it works
 
-Each metric is collected by a small standalone bash script in `bin/`, run on
-a timer by `BarWidget.qml` and merged into a single stats object:
+Each metric is collected by a small standalone bash script in [`bin/`](bin),
+run on a timer by [`BarWidget.qml`](BarWidget.qml) and merged into a single
+stats object:
 
-- `omaspeedmeter-cpu` — reads `/proc/stat`, diffs against a cached previous
-  sample in `$XDG_CACHE_HOME/omaspeedmeter/cpu` to compute usage %.
-- `omaspeedmeter-mem` — reads `/proc/meminfo` directly (no state needed).
-- `omaspeedmeter-net` — reads interface byte counters from sysfs, diffs
-  against `$XDG_CACHE_HOME/omaspeedmeter/net` to compute throughput.
-- `omaspeedmeter-temp` — reads a thermal zone from sysfs, auto-preferring a
-  zone whose type matches a known CPU sensor (`coretemp`, `k10temp`, etc.).
-- `omaspeedmeter-gpu` — detects the GPU vendor and shells out to
-  `nvidia-smi`, AMD's `gpu_busy_percent` sysfs file, or `intel_gpu_top`.
-- `omaspeedmeter-procs` — counts `/proc/[0-9]*` directories.
+- [`omaspeedmeter-cpu`](bin/omaspeedmeter-cpu) — reads
+  [`/proc/stat`](https://man7.org/linux/man-pages/man5/proc_stat.5.html),
+  diffs against a cached previous sample in
+  [`$XDG_CACHE_HOME`](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html)`/omaspeedmeter/cpu`
+  to compute usage %.
+- [`omaspeedmeter-mem`](bin/omaspeedmeter-mem) — reads
+  [`/proc/meminfo`](https://man7.org/linux/man-pages/man5/proc_meminfo.5.html)
+  directly (no state needed).
+- [`omaspeedmeter-net`](bin/omaspeedmeter-net) — reads interface byte
+  counters from sysfs, diffs against `$XDG_CACHE_HOME/omaspeedmeter/net` to
+  compute throughput.
+- [`omaspeedmeter-temp`](bin/omaspeedmeter-temp) — reads a thermal zone from
+  sysfs, auto-preferring a zone whose type matches a known CPU sensor
+  (`coretemp`, `k10temp`, etc.).
+- [`omaspeedmeter-gpu`](bin/omaspeedmeter-gpu) — detects the GPU vendor and
+  shells out to [`nvidia-smi`](https://docs.nvidia.com/deploy/nvidia-smi/index.html),
+  AMD's `gpu_busy_percent` sysfs file, or
+  [`intel_gpu_top`](https://man.archlinux.org/man/intel_gpu_top.1.en).
+- [`omaspeedmeter-procs`](bin/omaspeedmeter-procs) — counts
+  [`/proc/[0-9]*`](https://man7.org/linux/man-pages/man5/proc.5.html)
+  directories.
 
 Each script only runs when its metric is enabled, and only prints a single
-line of JSON (e.g. `{"cpu":42}`), which `Model.js` parses and formats into
-the bar segments. `Model.js` holds all the pure logic (settings resolution,
-formatting, segment building) separately from the QML so it can be reasoned
-about — and unit tested — without a Quickshell runtime.
+line of JSON (e.g. `{"cpu":42}`), which [`Model.js`](Model.js) parses and
+formats into the bar segments. `Model.js` holds all the pure logic (settings
+resolution, formatting, segment building) separately from the QML so it can
+be reasoned about — and unit tested — without a
+[Quickshell](https://quickshell.org/) runtime.
 
 ## Development
 
@@ -117,24 +137,31 @@ loads the plugin straight from your working tree instead of a copy. Run
 omarchy restart shell
 ```
 
-Restarts the Omarchy shell to pick up changes (BarWidget.qml is not
-hot-reloaded).
+Restarts the [Omarchy shell](https://omarchy.org/manual/omarchy-cli/) to pick
+up changes (`BarWidget.qml` is not hot-reloaded).
 
 ```bash
 ./format.sh
 ```
 
-Formats the repo: `qmlformat` for `BarWidget.qml`, Prettier for
-Markdown/JSON/JS. Run before committing.
+Formats the repo: [`qmlformat`](https://doc.qt.io/qt-6/qtqml-tooling-qmlformat.html)
+for `BarWidget.qml`, [Prettier](https://prettier.io/) for Markdown/JSON/JS.
+Run before committing.
 
 ## Requirements
 
-- Linux with `/proc` and `/sys` available (standard on any distro).
-- `awk`, `bash`, `ip` — present on virtually every system.
+- Linux with [`/proc`](https://man7.org/linux/man-pages/man5/proc.5.html) and
+  [`/sys`](https://docs.kernel.org/filesystems/sysfs.html) available
+  (standard on any distro).
+- [`awk`](https://www.gnu.org/software/gawk/manual/gawk.html),
+  [`bash`](https://www.gnu.org/software/bash/manual/bash.html),
+  [`ip`](https://man7.org/linux/man-pages/man8/ip.8.html) — present on
+  virtually every system.
 - GPU stats additionally require, depending on vendor:
-    - NVIDIA: `nvidia-smi`
+    - NVIDIA: [`nvidia-smi`](https://docs.nvidia.com/deploy/nvidia-smi/index.html)
     - AMD: no extra tooling (reads sysfs directly)
-    - Intel: `intel_gpu_top` and `jq`
+    - Intel: [`intel_gpu_top`](https://man.archlinux.org/man/intel_gpu_top.1.en)
+      and [`jq`](https://jqlang.github.io/jq/manual/)
 
 If a required tool is missing, that metric's script emits `null` and the
 segment is skipped rather than erroring.
