@@ -57,6 +57,7 @@ persisted via `omarchy bar set`.
 | `labels`   | `false` | Show word labels (`CPU`, `MEM`, ...) instead of icons     |
 | `netSplit` | `false` | Show download/upload as two separate segments              |
 | `interval` | `2`     | Refresh interval, in seconds                                |
+| `gap`      | `8`     | Spacing between segments, in pixels (matches Omarchy's own control-gap spacing) |
 | `gpuVendor`| `auto`  | `auto`, `nvidia`, `amd`, `intel`, or `none`         |
 | `tempZone` | `auto`  | `auto`, or a specific `/sys/class/thermal/thermal_zone*/temp` path |
 | `netIface` | `auto`  | `auto`, or a specific network interface name              |

@@ -182,7 +182,7 @@ Panel {
   Row {
     id: row
     anchors.centerIn: parent
-    spacing: Style.space(10)
+    spacing: Style.space(root.resolved.gap)
 
     Repeater {
       model: root.segments
@@ -326,6 +326,17 @@ Panel {
           foreground: root.bar ? root.bar.foreground : Color.foreground
           fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
           onModified: function(v) { root.setSetting("interval", v, true) }
+        }
+
+        NumberField {
+          label: "Segment spacing (pixels)"
+          value: root.resolved.gap
+          from: 0
+          to: 40
+          stepSize: 1
+          foreground: root.bar ? root.bar.foreground : Color.foreground
+          fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+          onModified: function(v) { root.setSetting("gap", v, true) }
         }
 
         Dropdown {

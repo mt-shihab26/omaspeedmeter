@@ -20,6 +20,7 @@ var NET_UP_ICON = ""   // fa-upload
 function defaultSettings() {
   return {
     interval: 2,
+    gap: 8,
     cpu: true,
     mem: true,
     net: true,
@@ -46,7 +47,7 @@ function boolSetting(settings, key, fallback) {
 function numberSetting(settings, key, fallback) {
   if (!settings || !(key in settings)) return fallback
   var n = Number(settings[key])
-  return isFinite(n) && n > 0 ? n : fallback
+  return isFinite(n) && n >= 0 ? n : fallback
 }
 
 function stringSetting(settings, key, fallback) {
