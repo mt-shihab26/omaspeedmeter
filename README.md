@@ -36,19 +36,19 @@ more on `omarchy plugin` commands.
 
 ## Metrics
 
-| Metric  | Icon | Source                                                                                                                                              | Notes                                  |
-| ------- | :--: | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| Network |      | [`/sys/class/net/<iface>/statistics/*_bytes`](https://docs.kernel.org/networking/statistics.html)                                                   | Combined or split into download/upload |
-| CPU     |      | [`/proc/stat`](https://man7.org/linux/man-pages/man5/proc_stat.5.html)                                                                              | Usage % since the previous poll        |
-| Temp    |      | [`/sys/class/thermal/thermal_zone*/temp`](https://docs.kernel.org/driver-api/thermal/sysfs-api.html)                                                | Prefers the CPU package/core sensor    |
-| Memory  |      | [`/proc/meminfo`](https://man7.org/linux/man-pages/man5/proc_meminfo.5.html)                                                                        | `(MemTotal - MemAvailable) / MemTotal` |
-| GPU     |  󰢮   | [`nvidia-smi`](https://docs.nvidia.com/deploy/nvidia-smi/index.html), sysfs, or [`intel_gpu_top`](https://man.archlinux.org/man/intel_gpu_top.1.en) | Vendor auto-detected                   |
-| Procs   |      | [`/proc/[0-9]*`](https://man7.org/linux/man-pages/man5/proc.5.html)                                                                                 | Count of running process directories   |
+| Metric  | Source                                                                                                                                              | Notes                                  |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| Network | [`/sys/class/net/<iface>/statistics/*_bytes`](https://docs.kernel.org/networking/statistics.html)                                                   | Combined or split into download/upload |
+| CPU     | [`/proc/stat`](https://man7.org/linux/man-pages/man5/proc_stat.5.html)                                                                              | Usage % since the previous poll        |
+| Temp    | [`/sys/class/thermal/thermal_zone*/temp`](https://docs.kernel.org/driver-api/thermal/sysfs-api.html)                                                | Prefers the CPU package/core sensor    |
+| Memory  | [`/proc/meminfo`](https://man7.org/linux/man-pages/man5/proc_meminfo.5.html)                                                                        | `(MemTotal - MemAvailable) / MemTotal` |
+| GPU     | [`nvidia-smi`](https://docs.nvidia.com/deploy/nvidia-smi/index.html), sysfs, or [`intel_gpu_top`](https://man.archlinux.org/man/intel_gpu_top.1.en) | Vendor auto-detected                   |
+| Procs   | [`/proc/[0-9]*`](https://man7.org/linux/man-pages/man5/proc.5.html)                                                                                 | Count of running process directories   |
 
-Icons come from the [Nerd Font](https://www.nerdfonts.com/) glyph set Omarchy
-already ships for the bar, so they render consistently with the built-in
-widgets. Enable **word labels** in the settings popup to show `CPU`, `MEM`,
-etc. instead.
+Each metric shows as a [Nerd Font](https://www.nerdfonts.com/) glyph icon by
+default, from the glyph set Omarchy already ships for the bar, so they render
+consistently with the built-in widgets. Enable **word labels** in the
+settings popup to show `CPU`, `MEM`, etc. instead.
 
 CPU and network are rate-based and need two polls to produce a real number,
 so they show `…` for the first tick after the widget loads or after the
