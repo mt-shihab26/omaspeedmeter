@@ -6,7 +6,7 @@ set -uo pipefail
 
 STATE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/omaspeedmeter"
 STATE_FILE="$STATE_DIR/net"
-mkdir -p "$STATE_DIR"
+mkdir -p -m 700 "$STATE_DIR"
 
 IFACE="auto"
 while (($# > 0)); do
@@ -25,8 +25,13 @@ prev_ts=""
 prev_rx=0
 prev_tx=0
 if [[ -f "$STATE_FILE" ]]; then
-    # shellcheck disable=SC1090
-    source "$STATE_FILE" 2>/dev/null || true
+    while IFS='=' read -r key value; do
+        case "$key" in
+        prev_ts) [[ "$value" =~ ^[0-9]+(\.[0-9]+)?$ ]] && prev_ts="$value" ;;
+        prev_rx) [[ "$value" =~ ^[0-9]+$ ]] && prev_rx="$value" ;;
+        prev_tx) [[ "$value" =~ ^[0-9]+$ ]] && prev_tx="$value" ;;
+        esac
+    done <"$STATE_FILE"
 fi
 
 iface="$IFACE"
@@ -53,10 +58,12 @@ if [[ -n "$prev_ts" ]]; then
     fi
 fi
 
+tmp_file=$(mktemp "$STATE_DIR/net.XXXXXX")
 {
     echo "prev_ts=$now"
     echo "prev_rx=$rx"
     echo "prev_tx=$tx"
-} >"$STATE_FILE"
+} >"$tmp_file"
+mv -f "$tmp_file" "$STATE_FILE"
 
 printf '{"rx":%s,"tx":%s,"iface":"%s"}\n' "$rx_rate" "$tx_rate" "$iface"
