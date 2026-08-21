@@ -27,7 +27,7 @@ function defaultSettings() {
     gpu: true,
     procs: false,
     labels: false,
-    netSplit: true,
+    netSplit: false,
     gpuVendor: "auto",
     tempZone: "auto",
     netIface: "auto"
@@ -121,19 +121,19 @@ function buildSegments(settings, stats) {
   }
 
   if (s.cpu) push("cpu", stats ? formatPct(stats.cpu) : "…")
+  if (s.temp) push("temp", stats ? formatTemp(stats.temp) : "…")
   if (s.mem) push("mem", stats ? formatPct(stats.mem) : "…")
   if (s.net) {
-    var down = stats ? formatRate(stats.rx) : "…"
-    var up = stats ? formatRate(stats.tx) : "…"
-    var netLabel = labels ? "NET " : ""
     if (s.netSplit) {
+      var down = stats ? formatRate(stats.rx) : "…"
+      var up = stats ? formatRate(stats.tx) : "…"
       segments.push({ key: "net-down", text: (labels ? "DOWN " : "") + NET_DOWN_ICON + " " + down })
       segments.push({ key: "net-up", text: (labels ? "UP " : "") + NET_UP_ICON + " " + up })
     } else {
-      segments.push({ key: "net", text: netLabel + NET_DOWN_ICON + " " + down + " " + NET_UP_ICON + " " + up })
+      var total = stats ? formatRate((Number(stats.rx) || 0) + (Number(stats.tx) || 0)) : "…"
+      push("net", total)
     }
   }
-  if (s.temp) push("temp", stats ? formatTemp(stats.temp) : "…")
   if (s.gpu) push("gpu", stats ? formatPct(stats.gpu) : "…")
   if (s.procs) push("procs", stats ? String(stats.procs) : "…")
 

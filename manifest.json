@@ -22,7 +22,7 @@
       "gpu": true,
       "procs": false,
       "labels": false,
-      "netSplit": true,
+      "netSplit": false,
       "gpuVendor": "auto",
       "tempZone": "auto",
       "netIface": "auto"
