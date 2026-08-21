@@ -123,31 +123,6 @@ resolution, formatting, segment building) separately from the QML so it can
 be reasoned about — and unit tested — without a
 [Quickshell](https://quickshell.org/) runtime.
 
-## Development
-
-```bash
-./link.sh
-```
-
-Symlinks `~/.config/omarchy/plugins/omaspeedmeter` to this repo, so Omarchy
-loads the plugin straight from your working tree instead of a copy. Run
-`./link.sh --remove` to remove the symlink.
-
-```bash
-omarchy restart shell
-```
-
-Restarts the [Omarchy shell](https://omarchy.org/manual/omarchy-cli/) to pick
-up changes (`BarWidget.qml` is not hot-reloaded).
-
-```bash
-./format.sh
-```
-
-Formats the repo: [`qmlformat`](https://doc.qt.io/qt-6/qtqml-tooling-qmlformat.html)
-for `BarWidget.qml`, [Prettier](https://prettier.io/) for Markdown/JSON/JS.
-Run before committing.
-
 ## Requirements
 
 - Linux with [`/proc`](https://man7.org/linux/man-pages/man5/proc.5.html) and
@@ -185,6 +160,31 @@ segment is skipped rather than erroring.
 ├── link.sh                         # symlinks the repo into ~/.config/omarchy/plugins
 └── preview.png                     # screenshot used in this README
 ```
+
+## Development
+
+```bash
+./link.sh
+```
+
+Symlinks `~/.config/omarchy/plugins/omaspeedmeter` to this repo, so Omarchy
+loads the plugin straight from your working tree instead of a copy. Run
+`./link.sh --remove` to remove the symlink.
+
+```bash
+omarchy restart shell
+```
+
+Restarts the [Omarchy shell](https://omarchy.org/manual/omarchy-cli/) to pick
+up changes (`BarWidget.qml` is not hot-reloaded).
+
+```bash
+./format.sh
+```
+
+Formats the repo: [`qmlformat`](https://doc.qt.io/qt-6/qtqml-tooling-qmlformat.html)
+for `BarWidget.qml`, [Prettier](https://prettier.io/) for Markdown/JSON/JS.
+Run before committing.
 
 ## License
 
