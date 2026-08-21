@@ -35,4 +35,4 @@ jobs:
         run: bash /tmp/omarchy/bin/omarchy-plugin-validate "$GITHUB_WORKSPACE"
 
       - name: qmllint
-        run: /usr/lib/qt6/bin/qmllint -I /tmp/omarchy/shell BarWidget.qml
+        run: PATH="/usr/lib/qt6/bin:$PATH" qmllint -I /tmp/omarchy/shell BarWidget.qml

@@ -31,7 +31,7 @@ jobs:
         run: npm install -g prettier
 
       - name: Format
-        run: ./format.sh
+        run: PATH="/usr/lib/qt6/bin:$PATH" ./format.sh
 
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v5
