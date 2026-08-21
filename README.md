@@ -166,6 +166,26 @@ Run before committing.
 If a required tool is missing, that metric's script emits `null` and the
 segment is skipped rather than erroring.
 
+## Project structure
+
+```
+.
+├── .github/workflows/validate.yml  # CI: lint/format check on push and PR
+├── bin/                            # standalone stat-collector scripts, one per metric
+│   ├── omaspeedmeter-cpu
+│   ├── omaspeedmeter-gpu
+│   ├── omaspeedmeter-mem
+│   ├── omaspeedmeter-net
+│   ├── omaspeedmeter-procs
+│   └── omaspeedmeter-temp
+├── BarWidget.qml                   # bar segment UI, settings popup, polling timer
+├── Model.js                        # pure logic: settings resolution, formatting, segments
+├── manifest.json                   # Omarchy plugin manifest (id, defaults, settings schema)
+├── format.sh                       # qmlformat + Prettier, run before committing
+├── link.sh                         # symlinks the repo into ~/.config/omarchy/plugins
+└── preview.png                     # screenshot used in this README
+```
+
 ## License
 
 [MIT](LICENSE)
