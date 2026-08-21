@@ -36,8 +36,12 @@ jobs:
       - name: Format
         run: PATH="/usr/lib/qt6/bin:$PATH" ./format.sh
 
+      # GITHUB_TOKEN can never push changes to .github/workflows/* (GitHub
+      # blocks this to stop workflows self-escalating), so those files are
+      # excluded here and must be formatted/committed manually instead.
       - name: Commit Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: fix code style
           commit_options: '--no-verify'
+          file_pattern: '. :!.github/workflows'
