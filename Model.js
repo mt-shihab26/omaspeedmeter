@@ -8,38 +8,44 @@ var METRICS = [
     {
         key: "net",
         label: "NET",
-        icon: "",
+        icon: "", // fa-exchange (up/down)
         description: "Download/upload speed",
-    }, // fa-exchange (up/down)
+    }, 
     {
         key: "cpu",
         label: "CPU",
-        icon: "",
+        icon: "",  // oct-cpu
         description: "CPU usage percentage",
-    }, // oct-cpu
-    { key: "temp", label: "TEMP", icon: "", description: "CPU temperature" }, // fa-thermometer-half
+    },
+    { 
+        key: "temp",
+            label: "TEMP",
+            icon: "", // fa-thermometer-half
+            description: "CPU temperature"
+    }, 
     {
         key: "mem",
         label: "MEM",
-        icon: "",
+        icon: "", // fa-memory
         description: "Memory usage percentage",
-    }, // fa-memory
+    }, 
     {
         key: "gpu",
         label: "GPU",
-        icon: "󰢮",
+        icon: "󰢮", // md-expansion_card
         description: "GPU usage percentage",
-    }, // md-expansion_card
+    }, 
     {
         key: "procs",
         label: "PROC",
-        icon: "",
+        icon: "", // fa-tasks
         description: "Running process count",
-    }, // fa-tasks
+    }, 
 ];
 
 var NET_DOWN_ICON = ""; // fa-download
 var NET_UP_ICON = ""; // fa-upload
+var PLACEHOLDER = "…"; // shown while a metric's value hasn't arrived yet
 
 function defaultSettings() {
     return {
@@ -108,17 +114,24 @@ function parseStats(text) {
 }
 
 function formatPct(value) {
-    if (value === null || value === undefined) return "N/A";
+    if (value === null || value === undefined) return PLACEHOLDER;
     var n = Number(value);
-    if (!isFinite(n)) return "N/A";
+    if (!isFinite(n)) return PLACEHOLDER;
     return Math.round(n) + "%";
 }
 
 function formatTemp(value) {
-    if (value === null || value === undefined) return "N/A";
+    if (value === null || value === undefined) return PLACEHOLDER;
     var n = Number(value);
-    if (!isFinite(n)) return "N/A";
+    if (!isFinite(n)) return PLACEHOLDER;
     return Math.round(n) + "°";
+}
+
+function formatCount(value) {
+    if (value === null || value === undefined) return PLACEHOLDER;
+    var n = Number(value);
+    if (!isFinite(n)) return PLACEHOLDER;
+    return String(Math.round(n));
 }
 
 // Bytes/sec -> short human string, e.g. 850B/s, 12.3K/s, 4.1M/s
@@ -154,8 +167,8 @@ function buildSegments(settings, stats) {
 
     if (s.net) {
         if (s.netSplit) {
-            var down = stats ? formatRate(stats.rx) : "…";
-            var up = stats ? formatRate(stats.tx) : "…";
+            var down = stats ? formatRate(stats.rx) : PLACEHOLDER;
+            var up = stats ? formatRate(stats.tx) : PLACEHOLDER;
             segments.push({
                 key: "net-down",
                 text: (labels ? "DOWN " : NET_DOWN_ICON + " ") + down,
@@ -167,15 +180,15 @@ function buildSegments(settings, stats) {
         } else {
             var total = stats
                 ? formatRate((Number(stats.rx) || 0) + (Number(stats.tx) || 0))
-                : "…";
+                : PLACEHOLDER;
             push("net", total);
         }
     }
-    if (s.cpu) push("cpu", stats ? formatPct(stats.cpu) : "…");
-    if (s.temp) push("temp", stats ? formatTemp(stats.temp) : "…");
-    if (s.mem) push("mem", stats ? formatPct(stats.mem) : "…");
-    if (s.gpu) push("gpu", stats ? formatPct(stats.gpu) : "…");
-    if (s.procs) push("procs", stats ? String(stats.procs) : "…");
+    if (s.cpu) push("cpu", stats ? formatPct(stats.cpu) : PLACEHOLDER);
+    if (s.temp) push("temp", stats ? formatTemp(stats.temp) : PLACEHOLDER);
+    if (s.mem) push("mem", stats ? formatPct(stats.mem) : PLACEHOLDER);
+    if (s.gpu) push("gpu", stats ? formatPct(stats.gpu) : PLACEHOLDER);
+    if (s.procs) push("procs", stats ? formatCount(stats.procs) : PLACEHOLDER);
 
     return segments;
 }
