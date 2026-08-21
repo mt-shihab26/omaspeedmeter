@@ -62,6 +62,9 @@ function defaultSettings() {
         gpuVendor: "auto",
         tempZone: "auto",
         netIface: "auto",
+        order: METRICS.map(function (m) {
+            return m.key;
+        }),
     };
 }
 
@@ -86,6 +89,37 @@ function stringSetting(settings, key, fallback) {
     return typeof v === "string" && v.length > 0 ? v : fallback;
 }
 
+// Stored as a plain comma-joined string (e.g. "net,cpu,mem"), not JSON —
+// `omarchy bar set --json` passes the raw value through Quickshell's `qs ipc
+// call`, which mis-splits a bracketed array literal into extra arguments
+// instead of treating it as one string.
+function arraySetting(settings, key, fallback) {
+    if (!settings || !(key in settings)) return fallback;
+    var v = settings[key];
+    if (Array.isArray(v)) return v;
+    if (typeof v === "string" && v.length > 0) return v.split(",");
+    return fallback;
+}
+
+// Keeps every valid key exactly once, in the order given, then appends any
+// valid key missing from `order` (e.g. a metric added after the user's
+// stored order was last saved) so nothing drops out of the segment list.
+function sanitizeOrder(order, validKeys) {
+    var seen = {};
+    var result = [];
+    for (var i = 0; i < order.length; i++) {
+        var k = order[i];
+        if (validKeys.indexOf(k) !== -1 && !seen[k]) {
+            seen[k] = true;
+            result.push(k);
+        }
+    }
+    for (var j = 0; j < validKeys.length; j++) {
+        if (!seen[validKeys[j]]) result.push(validKeys[j]);
+    }
+    return result;
+}
+
 // `dynamicDefaults` lets the QML layer override a static default with a
 // live value it alone has access to — e.g. "gap" falling back to
 // Style.spacing.controlGap so the widget tracks the user's Omarchy theme
@@ -95,7 +129,15 @@ function resolvedSettings(settings, dynamicDefaults) {
     for (var dk in dynamicDefaults || {}) d[dk] = dynamicDefaults[dk];
     var out = {};
     for (var k in d) {
-        if (typeof d[k] === "boolean") out[k] = boolSetting(settings, k, d[k]);
+        if (k === "order")
+            out[k] = sanitizeOrder(
+                arraySetting(settings, k, d[k]),
+                METRICS.map(function (m) {
+                    return m.key;
+                }),
+            );
+        else if (typeof d[k] === "boolean")
+            out[k] = boolSetting(settings, k, d[k]);
         else if (typeof d[k] === "number")
             out[k] = numberSetting(settings, k, d[k]);
         else out[k] = stringSetting(settings, k, d[k]);
@@ -165,30 +207,52 @@ function buildSegments(settings, stats) {
         segments.push({ key: key, text: prefix + valueText });
     }
 
-    if (s.net) {
-        if (s.netSplit) {
-            var down = stats ? formatRate(stats.rx) : PLACEHOLDER;
-            var up = stats ? formatRate(stats.tx) : PLACEHOLDER;
-            segments.push({
-                key: "net-down",
-                text: (labels ? "DOWN " : NET_DOWN_ICON + " ") + down,
-            });
-            segments.push({
-                key: "net-up",
-                text: (labels ? "UP " : NET_UP_ICON + " ") + up,
-            });
-        } else {
-            var total = stats
-                ? formatRate((Number(stats.rx) || 0) + (Number(stats.tx) || 0))
-                : PLACEHOLDER;
-            push("net", total);
-        }
+    var builders = {
+        net: function () {
+            if (!s.net) return;
+            if (s.netSplit) {
+                var down = stats ? formatRate(stats.rx) : PLACEHOLDER;
+                var up = stats ? formatRate(stats.tx) : PLACEHOLDER;
+                segments.push({
+                    key: "net-down",
+                    text: (labels ? "DOWN " : NET_DOWN_ICON + " ") + down,
+                });
+                segments.push({
+                    key: "net-up",
+                    text: (labels ? "UP " : NET_UP_ICON + " ") + up,
+                });
+            } else {
+                var total = stats
+                    ? formatRate(
+                          (Number(stats.rx) || 0) + (Number(stats.tx) || 0),
+                      )
+                    : PLACEHOLDER;
+                push("net", total);
+            }
+        },
+        cpu: function () {
+            if (s.cpu) push("cpu", stats ? formatPct(stats.cpu) : PLACEHOLDER);
+        },
+        temp: function () {
+            if (s.temp)
+                push("temp", stats ? formatTemp(stats.temp) : PLACEHOLDER);
+        },
+        mem: function () {
+            if (s.mem) push("mem", stats ? formatPct(stats.mem) : PLACEHOLDER);
+        },
+        gpu: function () {
+            if (s.gpu) push("gpu", stats ? formatPct(stats.gpu) : PLACEHOLDER);
+        },
+        procs: function () {
+            if (s.procs)
+                push("procs", stats ? formatCount(stats.procs) : PLACEHOLDER);
+        },
+    };
+
+    for (var i = 0; i < s.order.length; i++) {
+        var build = builders[s.order[i]];
+        if (build) build();
     }
-    if (s.cpu) push("cpu", stats ? formatPct(stats.cpu) : PLACEHOLDER);
-    if (s.temp) push("temp", stats ? formatTemp(stats.temp) : PLACEHOLDER);
-    if (s.mem) push("mem", stats ? formatPct(stats.mem) : PLACEHOLDER);
-    if (s.gpu) push("gpu", stats ? formatPct(stats.gpu) : PLACEHOLDER);
-    if (s.procs) push("procs", stats ? formatCount(stats.procs) : PLACEHOLDER);
 
     return segments;
 }
@@ -265,6 +329,8 @@ if (typeof module !== "undefined") {
         boolSetting: boolSetting,
         numberSetting: numberSetting,
         stringSetting: stringSetting,
+        arraySetting: arraySetting,
+        sanitizeOrder: sanitizeOrder,
         resolvedSettings: resolvedSettings,
         parseStats: parseStats,
         formatPct: formatPct,

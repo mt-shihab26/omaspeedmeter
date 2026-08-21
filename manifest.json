@@ -73,6 +73,11 @@
                 "key": "netIface",
                 "type": "string",
                 "label": "Network interface (auto or name)"
+            },
+            {
+                "key": "order",
+                "type": "string",
+                "label": "Segment order (JSON array; set via the METRICS list's move buttons)"
             }
         ]
     }

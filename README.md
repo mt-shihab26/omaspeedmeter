@@ -7,10 +7,10 @@
 [Omarchy](https://omarchy.org/) bar widget showing CPU, memory, network, temperature, GPU, and process count stats.
 
 Click the widget in the bar to open a settings popup where you can toggle
-metrics, split network into up/down segments, switch icons for word labels,
-move the widget between bar sections, and change the refresh interval, GPU
-vendor, temperature source, and network interface — all without editing
-config files by hand.
+metrics, reorder segments, split network into up/down segments, switch icons
+for word labels, move the widget between bar sections, and change the
+refresh interval, GPU vendor, temperature source, and network interface —
+all without editing config files by hand.
 
 <table>
 <tr>
@@ -59,21 +59,22 @@ refresh interval changes.
 All settings are toggled/edited from the bar widget's click popup, and are
 persisted via [`omarchy bar set`](https://omarchy.org/manual/the-top-bar/).
 
-| Setting     | Default | Description                                                                    |
-| ----------- | ------- | ------------------------------------------------------------------------------ |
-| `net`       | `true`  | Show network speed                                                             |
-| `cpu`       | `true`  | Show CPU usage %                                                               |
-| `temp`      | `false` | Show CPU temperature                                                           |
-| `mem`       | `true`  | Show memory usage %                                                            |
-| `gpu`       | `false` | Show GPU usage %                                                               |
-| `procs`     | `false` | Show running process count                                                     |
-| `netSplit`  | `false` | Show download/upload as two separate segments                                  |
-| `labels`    | `false` | Show word labels (`CPU`, `MEM`, ...) instead of icons                          |
-| `interval`  | `2`     | Refresh interval, in seconds                                                   |
-| `gap`       | `17`    | Spacing between segments, in pixels (matches Omarchy's own bar widget spacing) |
-| `gpuVendor` | `auto`  | `auto`, `nvidia`, `amd`, `intel`, or `none`                                    |
-| `netIface`  | `auto`  | `auto`, or a specific network interface name                                   |
-| `tempZone`  | `auto`  | `auto`, or a specific `/sys/class/thermal/thermal_zone*/temp` path             |
+| Setting     | Default             | Description                                                                    |
+| ----------- | ------------------- | ------------------------------------------------------------------------------ |
+| `net`       | `true`              | Show network speed                                                             |
+| `cpu`       | `true`              | Show CPU usage %                                                               |
+| `temp`      | `false`             | Show CPU temperature                                                           |
+| `mem`       | `true`              | Show memory usage %                                                            |
+| `gpu`       | `false`             | Show GPU usage %                                                               |
+| `procs`     | `false`             | Show running process count                                                     |
+| `netSplit`  | `false`             | Show download/upload as two separate segments                                  |
+| `labels`    | `false`             | Show word labels (`CPU`, `MEM`, ...) instead of icons                          |
+| `interval`  | `2`                 | Refresh interval, in seconds                                                   |
+| `gap`       | `17`                | Spacing between segments, in pixels (matches Omarchy's own bar widget spacing) |
+| `gpuVendor` | `auto`              | `auto`, `nvidia`, `amd`, `intel`, or `none`                                    |
+| `netIface`  | `auto`              | `auto`, or a specific network interface name                                   |
+| `tempZone`  | `auto`              | `auto`, or a specific `/sys/class/thermal/thermal_zone*/temp` path             |
+| `order`     | _(insertion order)_ | Segment display order; set with the ▲/▼ buttons in the popup's METRICS list    |
 
 `auto` for GPU vendor and temperature zone probes the system on each poll;
 pinning a specific value skips detection and avoids picking the wrong sensor
@@ -87,6 +88,12 @@ The bar position dropdown (left/center/right) reads and writes the widget's
 placement via [`omarchy-shell`](https://omarchy.org/manual/omarchy-cli/)/
 [`omarchy bar move`](https://omarchy.org/manual/the-top-bar/), independent of
 the `defaultSection` set on first install.
+
+Each row in the popup's METRICS list has ▲/▼ buttons to move that metric up
+or down; the bar segments re-render in the new order immediately, and it
+persists the same way as every other setting. The ↺ button next to the
+METRICS header resets the order back to the default
+(net, cpu, temp, mem, gpu, procs).
 
 ## How it works
 

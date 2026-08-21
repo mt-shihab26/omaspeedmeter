@@ -22,6 +22,17 @@ Panel {
     })
     property var stats: null
     readonly property var segments: Model.buildSegments(root.settings, root.stats)
+    // Model.METRICS re-ordered to match the persisted `order` setting, for
+    // the popup's METRICS list — kept in sync with root.resolved.order so
+    // the move-up/move-down buttons there always reflect the saved order.
+    readonly property var orderedMetrics: root.resolved.order.map(function (key) {
+        for (var i = 0; i < Model.METRICS.length; i++)
+            if (Model.METRICS[i].key === key)
+                return Model.METRICS[i];
+        return null;
+    }).filter(function (m) {
+        return m !== null;
+    })
     property string currentSection: ""
     property var netIfaceOptions: [
         {
@@ -85,6 +96,32 @@ Panel {
 
     function toggleMetric(key) {
         root.setSetting(key, !root.resolved[key], true);
+    }
+
+    // Swaps `key` with its neighbor one step toward `direction` (-1 = up,
+    // +1 = down) in the metric order and persists the result. Operates on
+    // the full metric list (root.resolved.order), not just enabled ones, so
+    // the popup's METRICS list stays reorderable regardless of what's shown.
+    function moveMetric(key, direction) {
+        var order = root.resolved.order.slice();
+        var from = order.indexOf(key);
+        var to = from + direction;
+        if (from === -1 || to < 0 || to >= order.length)
+            return;
+
+        var tmp = order[to];
+        order[to] = order[from];
+        order[from] = tmp;
+
+        root.setSetting("order", order.join(","), false);
+    }
+
+    // Restores the original METRICS insertion order (net, cpu, temp, mem,
+    // gpu, procs), undoing any moveMetric calls.
+    function resetOrder() {
+        root.setSetting("order", Model.METRICS.map(function (m) {
+            return m.key;
+        }).join(","), false);
     }
 
     function refreshSection() {
@@ -309,25 +346,76 @@ Panel {
                     foreground: root.bar ? root.bar.foreground : Color.foreground
                 }
 
-                PanelSectionHeader {
-                    text: "METRICS"
-                    foreground: root.bar ? root.bar.foreground : Color.foreground
-                    fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                Item {
+                    width: settingsColumn.width
+                    height: metricsHeader.implicitHeight
+
+                    PanelSectionHeader {
+                        id: metricsHeader
+
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: "METRICS"
+                        foreground: root.bar ? root.bar.foreground : Color.foreground
+                        fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                    }
+
+                    PanelActionButton {
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        iconText: "↺"
+                        tooltipText: "Reset order to default"
+                        foreground: root.bar ? root.bar.foreground : Color.foreground
+                        fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                        onClicked: root.resetOrder()
+                    }
                 }
 
                 Repeater {
-                    model: Model.METRICS
+                    model: root.orderedMetrics
 
-                    Toggle {
+                    Row {
+                        id: metricRow
+
                         required property var modelData
+                        required property int index
 
                         width: settingsColumn.width
-                        label: modelData.icon + "  " + modelData.label
-                        description: modelData.description || ""
-                        checked: root.resolved[modelData.key] === true
-                        foreground: root.bar ? root.bar.foreground : Color.foreground
-                        fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
-                        onClicked: root.toggleMetric(modelData.key)
+                        spacing: Style.space(4)
+
+                        Toggle {
+                            width: metricRow.width - upBtn.width - downBtn.width - metricRow.spacing * 2
+                            label: metricRow.modelData.icon + "  " + metricRow.modelData.label
+                            description: metricRow.modelData.description || ""
+                            checked: root.resolved[metricRow.modelData.key] === true
+                            foreground: root.bar ? root.bar.foreground : Color.foreground
+                            fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                            onClicked: root.toggleMetric(metricRow.modelData.key)
+                        }
+
+                        PanelActionButton {
+                            id: upBtn
+
+                            anchors.verticalCenter: parent.verticalCenter
+                            iconText: "▲"
+                            tooltipText: "Move up"
+                            foreground: root.bar ? root.bar.foreground : Color.foreground
+                            fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                            enabled: metricRow.index > 0
+                            onClicked: root.moveMetric(metricRow.modelData.key, -1)
+                        }
+
+                        PanelActionButton {
+                            id: downBtn
+
+                            anchors.verticalCenter: parent.verticalCenter
+                            iconText: "▼"
+                            tooltipText: "Move down"
+                            foreground: root.bar ? root.bar.foreground : Color.foreground
+                            fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                            enabled: metricRow.index < root.orderedMetrics.length - 1
+                            onClicked: root.moveMetric(metricRow.modelData.key, 1)
+                        }
                     }
                 }
 
