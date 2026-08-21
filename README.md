@@ -18,6 +18,19 @@ source, combined vs. split up/down network display, word labels).
   once. `BarWidget.qml` only spawns the scripts for currently-enabled
   metrics, each poll interval.
 
+## Installation
+
+```bash
+omarchy plugin add https://github.com/mt-shihab26/omaspeedmeter.git --enable
+omarchy bar move mt-shihab26.omaspeedmeter --section right   # or left/center
+```
+
+To remove it:
+
+```bash
+omarchy plugin remove mt-shihab26.omaspeedmeter
+```
+
 ## Development
 
 This directory lives directly under `~/.config/omarchy/plugins/` and is
