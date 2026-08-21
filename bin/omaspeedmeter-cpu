@@ -1,0 +1,37 @@
+#!/bin/bash
+# Emits {"cpu":<pct>} — CPU usage percent since the previous invocation.
+# Deltas are computed against a cached state file, so this script must be
+# polled periodically rather than run once.
+set -uo pipefail
+
+STATE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/omaspeedmeter"
+STATE_FILE="$STATE_DIR/cpu"
+mkdir -p "$STATE_DIR"
+
+prev_total=0
+prev_idle=0
+have_prev=0
+if [[ -f "$STATE_FILE" ]]; then
+  # shellcheck disable=SC1090
+  source "$STATE_FILE" 2>/dev/null && have_prev=1
+fi
+
+read -r _ cu cn cs ci ciow cirq csirq cst _ < /proc/stat
+cpu_idle=$((ci + ciow))
+cpu_total=$((cu + cn + cs + ci + ciow + cirq + csirq + cst))
+
+cpu_pct=0
+if (( have_prev )); then
+  d_total=$((cpu_total - prev_total))
+  d_idle=$((cpu_idle - prev_idle))
+  if (( d_total > 0 )); then
+    cpu_pct=$(awk -v dt="$d_total" -v di="$d_idle" 'BEGIN { p = (dt-di)/dt*100; if (p<0) p=0; if (p>100) p=100; printf "%.0f", p }')
+  fi
+fi
+
+{
+  echo "prev_total=$cpu_total"
+  echo "prev_idle=$cpu_idle"
+} > "$STATE_FILE"
+
+printf '{"cpu":%s}\n' "$cpu_pct"

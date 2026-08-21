@@ -1,0 +1,7 @@
+#!/bin/bash
+# Emits {"procs":<count>} — number of running processes.
+set -uo pipefail
+
+proc_count=$(compgen -G "/proc/[0-9]*" | wc -l)
+
+printf '{"procs":%s}\n' "$proc_count"

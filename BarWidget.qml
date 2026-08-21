@@ -17,6 +17,16 @@ Panel {
   readonly property var resolved: Model.resolvedSettings(root.settings)
   property var stats: null
   readonly property var segments: Model.buildSegments(root.settings, root.stats)
+
+  // Merges a single metric script's JSON output into root.stats, creating
+  // the object on first arrival. Reassigns (rather than mutates) so the
+  // `segments` binding above picks up the change.
+  function mergeStats(patch) {
+    var merged = {}
+    for (var k in root.stats) merged[k] = root.stats[k]
+    for (var k2 in patch) merged[k2] = patch[k2]
+    root.stats = merged
+  }
   property string currentSection: ""
   property var netIfaceOptions: [{ value: "auto", label: "auto" }]
   property var tempZoneOptions: [{ value: "auto", label: "auto" }]
@@ -32,7 +42,12 @@ Panel {
   implicitHeight: bar ? bar.barSize : 26
 
   function refresh() {
-    if (!statsProc.running) statsProc.running = true
+    if (root.resolved.cpu && !cpuProc.running) cpuProc.running = true
+    if (root.resolved.mem && !memProc.running) memProc.running = true
+    if (root.resolved.net && !netProc.running) netProc.running = true
+    if (root.resolved.temp && !tempProc.running) tempProc.running = true
+    if (root.resolved.gpu && !gpuProc.running) gpuProc.running = true
+    if (root.resolved.procs && !procsProc.running) procsProc.running = true
   }
 
   function setSetting(key, value, isJson) {
@@ -111,16 +126,56 @@ Panel {
   }
 
   Process {
-    id: statsProc
-    command: [
-      root.pluginDir + "bin/omarchy-sysmon-stats",
-      "--gpu-vendor", root.resolved.gpuVendor,
-      "--temp-zone", root.resolved.tempZone,
-      "--net-iface", root.resolved.netIface
-    ]
+    id: cpuProc
+    command: [root.pluginDir + "bin/omaspeedmeter-cpu"]
     stdout: StdioCollector {
       waitForEnd: true
-      onStreamFinished: root.stats = Model.parseStats(text)
+      onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
+    }
+  }
+
+  Process {
+    id: memProc
+    command: [root.pluginDir + "bin/omaspeedmeter-mem"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
+    }
+  }
+
+  Process {
+    id: netProc
+    command: [root.pluginDir + "bin/omaspeedmeter-net", "--iface", root.resolved.netIface]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
+    }
+  }
+
+  Process {
+    id: tempProc
+    command: [root.pluginDir + "bin/omaspeedmeter-temp", "--zone", root.resolved.tempZone]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
+    }
+  }
+
+  Process {
+    id: gpuProc
+    command: [root.pluginDir + "bin/omaspeedmeter-gpu", "--vendor", root.resolved.gpuVendor]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
+    }
+  }
+
+  Process {
+    id: procsProc
+    command: [root.pluginDir + "bin/omaspeedmeter-procs"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
     }
   }
 

@@ -1,0 +1,51 @@
+#!/bin/bash
+# Emits {"gpu":<pct>} (or {"gpu":null} if unavailable/disabled).
+set -uo pipefail
+
+VENDOR="auto"
+while (( $# > 0 )); do
+  case "$1" in
+    --vendor) VENDOR="${2:-auto}"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+
+detect_vendor() {
+  if command -v nvidia-smi >/dev/null 2>&1; then
+    echo "nvidia"
+  elif compgen -G "/sys/class/drm/card*/device/gpu_busy_percent" > /dev/null; then
+    echo "amd"
+  elif command -v intel_gpu_top >/dev/null 2>&1; then
+    echo "intel"
+  else
+    echo "none"
+  fi
+}
+
+vendor="$VENDOR"
+[[ "$vendor" == "auto" ]] && vendor=$(detect_vendor)
+
+gpu_pct="null"
+case "$vendor" in
+  nvidia)
+    if command -v nvidia-smi >/dev/null 2>&1; then
+      v=$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits 2>/dev/null | head -1 | tr -dc '0-9')
+      [[ -n "$v" ]] && gpu_pct="$v"
+    fi
+    ;;
+  amd)
+    f=$(compgen -G "/sys/class/drm/card*/device/gpu_busy_percent" | head -1)
+    if [[ -n "$f" && -r "$f" ]]; then
+      v=$(<"$f")
+      [[ "$v" =~ ^[0-9]+$ ]] && gpu_pct="$v"
+    fi
+    ;;
+  intel)
+    if command -v intel_gpu_top >/dev/null 2>&1 && command -v jq >/dev/null 2>&1; then
+      v=$(timeout 1 intel_gpu_top -J -o - -s 200 -n 1 2>/dev/null | jq -r '.[0].engines["Render/3D"].busy // empty' 2>/dev/null)
+      [[ -n "$v" ]] && gpu_pct=$(awk -v r="$v" 'BEGIN { p=r+0; if(p<0)p=0; if(p>100)p=100; printf "%.0f", p }')
+    fi
+    ;;
+esac
+
+printf '{"gpu":%s}\n' "$gpu_pct"
