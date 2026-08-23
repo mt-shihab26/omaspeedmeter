@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.2.0] - 2026-08-24
+
+### Added
+
+- Two-way config file sync at `~/.config/omaspeedmeter/config.json`:
+  editing settings in the popup writes the file, and hand-editing the file
+  applies live and stays in sync with the popup and `omarchy bar set`
+
+**Full Changelog**: [v1.1.0...v1.2.0](https://github.com/mt-shihab26/omaspeedmeter/compare/v1.1.0...v1.2.0)
+
 ## [1.1.0] - 2026-08-23
 
 ### Added
