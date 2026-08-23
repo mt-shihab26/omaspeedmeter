@@ -169,6 +169,7 @@ segment is skipped rather than erroring.
 ```
 .
 ├── .github/workflows/validate.yml  # CI: lint/format check on push and PR
+├── CHANGELOG.md                    # notable changes per version
 ├── bin/                            # standalone stat-collector scripts, one per metric
 │   ├── omaspeedmeter-cpu
 │   ├── omaspeedmeter-gpu
@@ -209,6 +210,10 @@ up changes (`BarWidget.qml` is not hot-reloaded).
 Formats the repo: [`qmlformat`](https://doc.qt.io/qt-6/qtqml-tooling-qmlformat.html)
 for `BarWidget.qml`, [Prettier](https://prettier.io/) for Markdown/JSON/JS.
 Run before committing.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for notable changes per version.
 
 ## License
 
