@@ -16,6 +16,17 @@ jobs:
   release:
     if: github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    # Format and Validate typically finish within seconds of each other, so
+    # both of their completions can trigger this job for the same commit at
+    # nearly the same time. Without this, both runs can pass the "already
+    # released?" check before either has created the tag, and both then hit
+    # gh release create — the second one fails with HTTP 422 (tag_name
+    # already exists). Serializing by commit means the second run only
+    # starts once the first has finished, by which point its check
+    # correctly sees the tag and skips.
+    concurrency:
+      group: release-${{ github.event.workflow_run.head_sha }}
+      cancel-in-progress: false
 
     steps:
       - uses: actions/checkout@v4
