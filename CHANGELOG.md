@@ -10,6 +10,8 @@ All notable changes to this project are documented in this file.
 - Right-click the widget to open a system monitor (`btop` by default, or
   `htop`), configurable via the new `systemMonitor` setting
 
+**Full Changelog**: https://github.com/mt-shihab26/omaspeedmeter/compare/v1.0.0...v1.1.0
+
 ## [1.0.0] - 2026-08-21
 
 ### Added
@@ -22,3 +24,5 @@ All notable changes to this project are documented in this file.
 - Reset button to restore all settings to their defaults
 - Per-metric polling scripts in `bin/`, with `Model.js` holding the pure
   settings/formatting/segment-building logic
+
+**Full Changelog**: [v1.0.0](https://github.com/mt-shihab26/omaspeedmeter/commits/v1.0.0)

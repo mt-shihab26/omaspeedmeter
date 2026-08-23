@@ -93,23 +93,6 @@ jobs:
             exit 1
           fi
 
-      # Mirrors GitHub's own auto-generated notes footer: a compare link
-      # against the highest existing version tag, or (on the very first
-      # release, when there's nothing to compare against) a link to the
-      # full commit history up to this tag instead.
-      - name: Append full changelog link
-        if: steps.gate.outputs.ready == 'true' && steps.check.outputs.already_released == 'false'
-        run: |
-          current_tag="v${{ steps.version.outputs.value }}"
-          prev_tag=$(git tag --list 'v*' | grep -v "^$current_tag\$" | sort -V | tail -1)
-
-          echo "" >> release_notes.md
-          if [ -n "$prev_tag" ]; then
-            echo "**Full Changelog**: ${{ github.server_url }}/${{ github.repository }}/compare/$prev_tag...$current_tag" >> release_notes.md
-          else
-            echo "**Full Changelog**: ${{ github.server_url }}/${{ github.repository }}/commits/$current_tag" >> release_notes.md
-          fi
-
       # Belt-and-braces alongside the concurrency group above: if this
       # version still somehow got released between the check step and here
       # (or the tag was created some other way), GitHub's "already exists"
