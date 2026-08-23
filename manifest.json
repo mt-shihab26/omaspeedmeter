@@ -6,9 +6,7 @@
     "author": "mt-shihab26",
     "description": "Omarchy bar widget showing CPU, memory, network, temperature, GPU, and process count stats.",
     "kinds": ["bar-widget"],
-    "entryPoints": {
-        "barWidget": "BarWidget.qml"
-    },
+    "entryPoints": { "barWidget": "BarWidget.qml" },
     "barWidget": {
         "displayName": "Omaspeedmeter",
         "description": "CPU / MEM / NET / TEMP / GPU / process-count stats",
@@ -33,36 +31,12 @@
             "systemMonitor": "btop"
         },
         "schema": [
-            {
-                "key": "cpu",
-                "type": "boolean",
-                "label": "Show CPU %"
-            },
-            {
-                "key": "mem",
-                "type": "boolean",
-                "label": "Show memory %"
-            },
-            {
-                "key": "swap",
-                "type": "boolean",
-                "label": "Show swap usage %"
-            },
-            {
-                "key": "net",
-                "type": "boolean",
-                "label": "Show network speed"
-            },
-            {
-                "key": "temp",
-                "type": "boolean",
-                "label": "Show temperature"
-            },
-            {
-                "key": "gpu",
-                "type": "boolean",
-                "label": "Show GPU %"
-            },
+            { "key": "cpu", "type": "boolean", "label": "Show CPU %" },
+            { "key": "mem", "type": "boolean", "label": "Show memory %" },
+            { "key": "swap", "type": "boolean", "label": "Show swap usage %" },
+            { "key": "net", "type": "boolean", "label": "Show network speed" },
+            { "key": "temp", "type": "boolean", "label": "Show temperature" },
+            { "key": "gpu", "type": "boolean", "label": "Show GPU %" },
             {
                 "key": "procs",
                 "type": "boolean",
