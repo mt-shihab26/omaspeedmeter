@@ -10,7 +10,7 @@ All notable changes to this project are documented in this file.
 - Right-click the widget to open a system monitor (`btop` by default, or
   `htop`), configurable via the new `systemMonitor` setting
 
-**Full Changelog**: https://github.com/mt-shihab26/omaspeedmeter/compare/v1.0.0...v1.1.0
+**Full Changelog**: [v1.0.0...v1.1.0](https://github.com/mt-shihab26/omaspeedmeter/compare/v1.0.0...v1.1.0)
 
 ## [1.0.0] - 2026-08-21
 
