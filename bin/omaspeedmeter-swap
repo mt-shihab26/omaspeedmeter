@@ -1,0 +1,20 @@
+#!/bin/bash
+# Emits {"swap":<pct>} — swap usage percent, read straight from /proc/meminfo.
+# Emits {"swap":null} when no swap is configured.
+set -uo pipefail
+
+swap_total=0
+swap_free=0
+while read -r key value _; do
+    case "$key" in
+    SwapTotal:) swap_total=$value ;;
+    SwapFree:) swap_free=$value ;;
+    esac
+done </proc/meminfo
+
+swap_pct="null"
+if ((swap_total > 0)); then
+    swap_pct=$(awk -v t="$swap_total" -v f="$swap_free" 'BEGIN { printf "%.0f", (t-f)/t*100 }')
+fi
+
+printf '{"swap":%s}\n' "$swap_pct"
