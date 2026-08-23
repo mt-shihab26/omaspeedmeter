@@ -30,6 +30,12 @@ var METRICS = [
         description: "Memory usage percentage",
     },
     {
+        key: "swap",
+        label: "SWAP",
+        icon: "", // fa-hdd-o
+        description: "Swap usage percentage",
+    },
+    {
         key: "gpu",
         label: "GPU",
         icon: "󰢮", // md-expansion_card
@@ -53,6 +59,7 @@ function defaultSettings() {
         gap: 17,
         cpu: true,
         mem: true,
+        swap: false,
         net: true,
         temp: false,
         gpu: false,
@@ -62,6 +69,7 @@ function defaultSettings() {
         gpuVendor: "auto",
         tempZone: "auto",
         netIface: "auto",
+        systemMonitor: "btop",
         order: METRICS.map(function (m) {
             return m.key;
         }),
@@ -239,6 +247,10 @@ function buildSegments(settings, stats) {
         },
         mem: function () {
             if (s.mem) push("mem", stats ? formatPct(stats.mem) : PLACEHOLDER);
+        },
+        swap: function () {
+            if (s.swap)
+                push("swap", stats ? formatPct(stats.swap) : PLACEHOLDER);
         },
         gpu: function () {
             if (s.gpu) push("gpu", stats ? formatPct(stats.gpu) : PLACEHOLDER);

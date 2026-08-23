@@ -18,6 +18,7 @@
             "gap": 17,
             "cpu": true,
             "mem": true,
+            "swap": false,
             "net": true,
             "temp": false,
             "gpu": false,
@@ -26,11 +27,13 @@
             "netSplit": false,
             "gpuVendor": "auto",
             "tempZone": "auto",
-            "netIface": "auto"
+            "netIface": "auto",
+            "systemMonitor": "btop"
         },
         "schema": [
             { "key": "cpu", "type": "boolean", "label": "Show CPU %" },
             { "key": "mem", "type": "boolean", "label": "Show memory %" },
+            { "key": "swap", "type": "boolean", "label": "Show swap usage %" },
             { "key": "net", "type": "boolean", "label": "Show network speed" },
             { "key": "temp", "type": "boolean", "label": "Show temperature" },
             { "key": "gpu", "type": "boolean", "label": "Show GPU %" },
@@ -73,6 +76,11 @@
                 "key": "netIface",
                 "type": "string",
                 "label": "Network interface (auto or name)"
+            },
+            {
+                "key": "systemMonitor",
+                "type": "string",
+                "label": "System monitor to open on right-click (btop/htop)"
             },
             {
                 "key": "order",

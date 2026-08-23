@@ -72,6 +72,9 @@ Panel {
         if (root.resolved.mem && !memProc.running)
             memProc.running = true;
 
+        if (root.resolved.swap && !swapProc.running)
+            swapProc.running = true;
+
         if (root.resolved.net && !netProc.running)
             netProc.running = true;
 
@@ -144,6 +147,15 @@ Panel {
             else
                 root.setSetting(key, value, false);
         }
+    }
+
+    // Opens the configured system monitor (btop/htop) in a floating
+    // terminal, or focuses it if already running.
+    function launchSystemMonitor() {
+        if (!root.bar)
+            return;
+
+        root.bar.run("omarchy-launch-or-focus-tui " + Util.shellQuote(root.resolved.systemMonitor));
     }
 
     function refreshSection() {
@@ -255,6 +267,17 @@ Panel {
     }
 
     Process {
+        id: swapProc
+
+        command: [root.pluginDir + "bin/omaspeedmeter-swap"]
+
+        stdout: StdioCollector {
+            waitForEnd: true
+            onStreamFinished: root.mergeStats(Model.parseStats(text) || {})
+        }
+    }
+
+    Process {
         id: netProc
 
         command: [root.pluginDir + "bin/omaspeedmeter-net", "--iface", root.resolved.netIface]
@@ -331,7 +354,13 @@ Panel {
     MouseArea {
         anchors.fill: parent
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.toggle()
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: function (mouse) {
+            if (mouse.button === Qt.RightButton)
+                root.launchSystemMonitor();
+            else
+                root.toggle();
+        }
     }
 
     KeyboardPanel {
@@ -556,6 +585,18 @@ Panel {
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                     onChanged: function (v) {
                         root.setSetting("tempZone", v, false);
+                    }
+                }
+
+                Dropdown {
+                    label: "System monitor (right-click)"
+                    width: settingsColumn.width
+                    value: root.resolved.systemMonitor
+                    options: ["btop", "htop"]
+                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
+                    onChanged: function (v) {
+                        root.setSetting("systemMonitor", v, false);
                     }
                 }
 

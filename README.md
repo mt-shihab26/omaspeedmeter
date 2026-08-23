@@ -4,13 +4,14 @@
 [![Validate](https://img.shields.io/github/actions/workflow/status/mt-shihab26/omaspeedmeter/validate.yml?branch=main&style=flat-square&label=validate)](https://github.com/mt-shihab26/omaspeedmeter/actions/workflows/validate.yml)
 [![MIT License](https://img.shields.io/badge/license-MIT-6aa6b2?style=flat-square)](LICENSE)
 
-[Omarchy](https://omarchy.org/) bar widget showing CPU, memory, network, temperature, GPU, and process count stats.
+[Omarchy](https://omarchy.org/) bar widget showing CPU, memory, swap, network, temperature, GPU, and process count stats.
 
 Click the widget in the bar to open a settings popup where you can toggle
 metrics, reorder segments, split network into up/down segments, switch icons
 for word labels, move the widget between bar sections, and change the
 refresh interval, GPU vendor, temperature source, and network interface —
-all without editing config files by hand.
+all without editing config files by hand. Right-click the widget to open a
+system monitor (`btop` by default, or `htop`).
 
 <table>
 <tr>
@@ -36,14 +37,15 @@ more on `omarchy plugin` commands.
 
 ## Metrics
 
-| Metric  | Source                                                                                                                                              | Notes                                  |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| Network | [`/sys/class/net/<iface>/statistics/*_bytes`](https://docs.kernel.org/networking/statistics.html)                                                   | Combined or split into download/upload |
-| CPU     | [`/proc/stat`](https://man7.org/linux/man-pages/man5/proc_stat.5.html)                                                                              | Usage % since the previous poll        |
-| Temp    | [`/sys/class/thermal/thermal_zone*/temp`](https://docs.kernel.org/driver-api/thermal/sysfs-api.html)                                                | Prefers the CPU package/core sensor    |
-| Memory  | [`/proc/meminfo`](https://man7.org/linux/man-pages/man5/proc_meminfo.5.html)                                                                        | `(MemTotal - MemAvailable) / MemTotal` |
-| GPU     | [`nvidia-smi`](https://docs.nvidia.com/deploy/nvidia-smi/index.html), sysfs, or [`intel_gpu_top`](https://man.archlinux.org/man/intel_gpu_top.1.en) | Vendor auto-detected                   |
-| Procs   | [`/proc/[0-9]*`](https://man7.org/linux/man-pages/man5/proc.5.html)                                                                                 | Count of running process directories   |
+| Metric  | Source                                                                                                                                              | Notes                                                                    |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Network | [`/sys/class/net/<iface>/statistics/*_bytes`](https://docs.kernel.org/networking/statistics.html)                                                   | Combined or split into download/upload                                   |
+| CPU     | [`/proc/stat`](https://man7.org/linux/man-pages/man5/proc_stat.5.html)                                                                              | Usage % since the previous poll                                          |
+| Temp    | [`/sys/class/thermal/thermal_zone*/temp`](https://docs.kernel.org/driver-api/thermal/sysfs-api.html)                                                | Prefers the CPU package/core sensor                                      |
+| Memory  | [`/proc/meminfo`](https://man7.org/linux/man-pages/man5/proc_meminfo.5.html)                                                                        | `(MemTotal - MemAvailable) / MemTotal`                                   |
+| Swap    | [`/proc/meminfo`](https://man7.org/linux/man-pages/man5/proc_meminfo.5.html)                                                                        | `(SwapTotal - SwapFree) / SwapTotal`; shows `…` if no swap is configured |
+| GPU     | [`nvidia-smi`](https://docs.nvidia.com/deploy/nvidia-smi/index.html), sysfs, or [`intel_gpu_top`](https://man.archlinux.org/man/intel_gpu_top.1.en) | Vendor auto-detected                                                     |
+| Procs   | [`/proc/[0-9]*`](https://man7.org/linux/man-pages/man5/proc.5.html)                                                                                 | Count of running process directories                                     |
 
 Each metric shows as a [Nerd Font](https://www.nerdfonts.com/) glyph icon by
 default, from the glyph set Omarchy already ships for the bar, so they render
@@ -59,22 +61,24 @@ refresh interval changes.
 All settings are toggled/edited from the bar widget's click popup, and are
 persisted via [`omarchy bar set`](https://omarchy.org/manual/the-top-bar/).
 
-| Setting     | Default             | Description                                                                    |
-| ----------- | ------------------- | ------------------------------------------------------------------------------ |
-| `net`       | `true`              | Show network speed                                                             |
-| `cpu`       | `true`              | Show CPU usage %                                                               |
-| `temp`      | `false`             | Show CPU temperature                                                           |
-| `mem`       | `true`              | Show memory usage %                                                            |
-| `gpu`       | `false`             | Show GPU usage %                                                               |
-| `procs`     | `false`             | Show running process count                                                     |
-| `netSplit`  | `false`             | Show download/upload as two separate segments                                  |
-| `labels`    | `false`             | Show word labels (`CPU`, `MEM`, ...) instead of icons                          |
-| `interval`  | `2`                 | Refresh interval, in seconds                                                   |
-| `gap`       | `17`                | Spacing between segments, in pixels (matches Omarchy's own bar widget spacing) |
-| `gpuVendor` | `auto`              | `auto`, `nvidia`, `amd`, `intel`, or `none`                                    |
-| `netIface`  | `auto`              | `auto`, or a specific network interface name                                   |
-| `tempZone`  | `auto`              | `auto`, or a specific `/sys/class/thermal/thermal_zone*/temp` path             |
-| `order`     | _(insertion order)_ | Segment display order; set with the ▲/▼ buttons in the popup's METRICS list    |
+| Setting         | Default             | Description                                                                    |
+| --------------- | ------------------- | ------------------------------------------------------------------------------ |
+| `net`           | `true`              | Show network speed                                                             |
+| `cpu`           | `true`              | Show CPU usage %                                                               |
+| `temp`          | `false`             | Show CPU temperature                                                           |
+| `mem`           | `true`              | Show memory usage %                                                            |
+| `swap`          | `false`             | Show swap usage %                                                              |
+| `gpu`           | `false`             | Show GPU usage %                                                               |
+| `procs`         | `false`             | Show running process count                                                     |
+| `netSplit`      | `false`             | Show download/upload as two separate segments                                  |
+| `labels`        | `false`             | Show word labels (`CPU`, `MEM`, ...) instead of icons                          |
+| `interval`      | `2`                 | Refresh interval, in seconds                                                   |
+| `gap`           | `17`                | Spacing between segments, in pixels (matches Omarchy's own bar widget spacing) |
+| `gpuVendor`     | `auto`              | `auto`, `nvidia`, `amd`, `intel`, or `none`                                    |
+| `netIface`      | `auto`              | `auto`, or a specific network interface name                                   |
+| `tempZone`      | `auto`              | `auto`, or a specific `/sys/class/thermal/thermal_zone*/temp` path             |
+| `systemMonitor` | `btop`              | `btop` or `htop`; opened by right-clicking the widget                          |
+| `order`         | _(insertion order)_ | Segment display order; set with the ▲/▼ buttons in the popup's METRICS list    |
 
 `auto` for GPU vendor and temperature zone probes the system on each poll;
 pinning a specific value skips detection and avoids picking the wrong sensor
@@ -109,6 +113,9 @@ stats object:
 - [`omaspeedmeter-mem`](bin/omaspeedmeter-mem) — reads
   [`/proc/meminfo`](https://man7.org/linux/man-pages/man5/proc_meminfo.5.html)
   directly (no state needed).
+- [`omaspeedmeter-swap`](bin/omaspeedmeter-swap) — reads
+  [`/proc/meminfo`](https://man7.org/linux/man-pages/man5/proc_meminfo.5.html)
+  directly; emits `null` when no swap is configured.
 - [`omaspeedmeter-net`](bin/omaspeedmeter-net) — reads interface byte
   counters from sysfs, diffs against `$XDG_CACHE_HOME/omaspeedmeter/net` to
   compute throughput.
@@ -130,6 +137,12 @@ resolution, formatting, segment building) separately from the QML so it can
 be reasoned about — and unit tested — without a
 [Quickshell](https://quickshell.org/) runtime.
 
+Right-clicking the widget opens the configured `systemMonitor` (`btop` by
+default, or `htop`) via
+[`omarchy-launch-or-focus-tui`](https://omarchy.org/manual/omarchy-cli/),
+focusing an existing window for it instead of spawning a duplicate if one is
+already open.
+
 ## Requirements
 
 - Linux with [`/proc`](https://man7.org/linux/man-pages/man5/proc.5.html) and
@@ -144,6 +157,9 @@ be reasoned about — and unit tested — without a
     - AMD: no extra tooling (reads sysfs directly)
     - Intel: [`intel_gpu_top`](https://man.archlinux.org/man/intel_gpu_top.1.en)
       and [`jq`](https://jqlang.github.io/jq/manual/)
+- Right-click requires whichever `systemMonitor` is configured
+  ([`btop`](https://github.com/aristocratos/btop) or
+  [`htop`](https://htop.dev/)) to be installed.
 
 If a required tool is missing, that metric's script emits `null` and the
 segment is skipped rather than erroring.
@@ -159,6 +175,7 @@ segment is skipped rather than erroring.
 │   ├── omaspeedmeter-mem
 │   ├── omaspeedmeter-net
 │   ├── omaspeedmeter-procs
+│   ├── omaspeedmeter-swap
 │   └── omaspeedmeter-temp
 ├── BarWidget.qml                   # bar segment UI, settings popup, polling timer
 ├── Model.js                        # pure logic: settings resolution, formatting, segments
