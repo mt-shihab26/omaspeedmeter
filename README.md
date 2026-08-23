@@ -189,6 +189,13 @@ segment is skipped rather than erroring.
 ## Development
 
 ```bash
+git checkout dev
+```
+
+Development happens on `dev`. Run `./rebase.sh` to keep it current with
+`main`: it pulls `main`, rebases `dev` onto it, and force-pushes `dev`.
+
+```bash
 ./link.sh
 ```
 
@@ -217,4 +224,4 @@ See [CHANGELOG.md](CHANGELOG.md) for notable changes per version.
 
 ## License
 
-[MIT](LICENSE)
+This project is licensed under the [MIT License](LICENSE).
