@@ -163,6 +163,19 @@ function parseStats(text) {
     return null;
 }
 
+// Same shape as parseStats (JSON.parse + trim + try/catch -> null on
+// failure), named separately since it parses ~/.config/omaspeedmeter's
+// config file rather than a polling script's stats output.
+function parseConfigFile(text) {
+    try {
+        var obj = JSON.parse(String(text || "").trim());
+        if (obj && typeof obj === "object") return obj;
+    } catch (e) {
+        // fall through
+    }
+    return null;
+}
+
 function formatPct(value) {
     if (value === null || value === undefined) return PLACEHOLDER;
     var n = Number(value);
@@ -345,6 +358,7 @@ if (typeof module !== "undefined") {
         sanitizeOrder: sanitizeOrder,
         resolvedSettings: resolvedSettings,
         parseStats: parseStats,
+        parseConfigFile: parseConfigFile,
         formatPct: formatPct,
         formatTemp: formatTemp,
         formatCount: formatCount,

@@ -99,6 +99,44 @@ persists the same way as every other setting. The ↺ button next to the
 popup title resets every setting in the table above back to its default,
 including the segment order.
 
+### Config file
+
+Every setting above (plus the bar position) is also mirrored to a
+hand-editable JSON file at `~/.config/omaspeedmeter/config.json`
+(`$XDG_CONFIG_HOME/omaspeedmeter/config.json` if set), kept in sync with the
+popup in both directions:
+
+- Changing a setting in the popup updates the config file.
+- Editing the config file (with the widget running) applies the change live —
+  through the same path a popup click would use, so it also updates via
+  `omarchy bar set`/`omarchy bar move` and stays consistent with the popup.
+
+```json
+{
+    "cpu": true,
+    "mem": true,
+    "swap": false,
+    "net": true,
+    "temp": false,
+    "gpu": false,
+    "procs": false,
+    "labels": false,
+    "netSplit": false,
+    "interval": 2,
+    "gap": 17,
+    "gpuVendor": "auto",
+    "tempZone": "auto",
+    "netIface": "auto",
+    "systemMonitor": "btop",
+    "order": ["net", "cpu", "temp", "mem", "swap", "gpu", "procs"],
+    "section": "right"
+}
+```
+
+`order` and `section` accept the same values as the `order` setting and bar
+position dropdown above; unknown keys are ignored and missing keys keep
+their current value.
+
 ## How it works
 
 Each metric is collected by a small standalone bash script in [`bin/`](bin),
@@ -142,6 +180,13 @@ default, or `htop`) via
 [`omarchy-launch-or-focus-tui`](https://omarchy.org/manual/omarchy-cli/),
 focusing an existing window for it instead of spawning a duplicate if one is
 already open.
+
+`~/.config/omaspeedmeter/config.json` is watched with a Quickshell
+[`FileView`](https://quickshell.org/), the same mechanism the Omarchy shell
+itself uses to hot-reload `~/.config/omarchy/shell.json`. A change to either
+side — the popup or the file — is serialized through the same
+`setSetting`/`setSection` calls, so both stay consistent with each other and
+with `omarchy bar set`/`omarchy bar move`.
 
 ## Requirements
 

@@ -52,6 +52,16 @@ Panel {
         var u = Qt.resolvedUrl(".").toString();
         return u.indexOf("file://") === 0 ? u.substring(7) : u;
     }
+    // Hand-editable mirror of the settings above, kept in sync both ways:
+    // popup changes get written out here, and external edits get relayed
+    // through setSetting()/setSection() (see writeConfigFile/
+    // reconcileConfigFile below).
+    readonly property string configDir: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/omaspeedmeter"
+    readonly property string configPath: root.configDir + "/config.json"
+    // Text we last wrote to (or reconciled from) config.json, so our own
+    // setText() triggering onFileChanged doesn't bounce back into another
+    // round of reconciliation.
+    property string lastSyncedConfigText: ""
 
     // Merges a single metric script's JSON output into root.stats, creating
     // the object on first arrival. Reassigns (rather than mutates) so the
@@ -169,6 +179,68 @@ Panel {
         moveSectionProc.running = true;
     }
 
+    // Serializes the current settings + bar section to config.json.
+    // Triggered (debounced) by onResolvedChanged/onCurrentSectionChanged,
+    // so it fires for both popup-driven changes and changes relayed here
+    // from an external config.json edit — no call site elsewhere needs to
+    // know this file exists.
+    function writeConfigFile() {
+        var defaults = Model.defaultSettings();
+        var payload = {};
+        for (var key in defaults)
+            payload[key] = root.resolved[key];
+        payload.section = root.currentSection;
+
+        var text = JSON.stringify(payload, null, 4) + "\n";
+        if (text === root.lastSyncedConfigText)
+            return;
+
+        root.lastSyncedConfigText = text;
+        configFile.setText(text);
+    }
+
+    // Applies an externally-edited config.json to the live settings by
+    // replaying each differing key through the same setSetting()/
+    // setSection() path a popup click would use, so omarchy bar set (and
+    // therefore Omarchy's own shell.json) stays in sync too.
+    function applyConfigFromFile(parsed) {
+        if (!parsed)
+            return;
+
+        var defaults = Model.defaultSettings();
+        var validKeys = Model.METRICS.map(function (m) {
+            return m.key;
+        });
+
+        for (var key in defaults) {
+            if (!(key in parsed))
+                continue;
+
+            var value = parsed[key];
+            if (key === "order") {
+                if (!Array.isArray(value))
+                    continue;
+                var sanitized = Model.sanitizeOrder(value, validKeys);
+                if (sanitized.join(",") !== root.resolved.order.join(","))
+                    root.setSetting("order", sanitized.join(","), false);
+            } else if (value !== root.resolved[key]) {
+                var isJson = typeof defaults[key] === "boolean" || typeof defaults[key] === "number";
+                root.setSetting(key, value, isJson);
+            }
+        }
+
+        if (typeof parsed.section === "string" && parsed.section !== root.currentSection && ["left", "center", "right"].indexOf(parsed.section) !== -1)
+            root.setSection(parsed.section);
+    }
+
+    function reconcileConfigFile(text) {
+        if (text === root.lastSyncedConfigText)
+            return;
+
+        root.lastSyncedConfigText = text;
+        root.applyConfigFromFile(Model.parseConfigFile(text));
+    }
+
     moduleName: "mt-shihab26.omaspeedmeter"
     ipcTarget: moduleName
     implicitWidth: row.implicitWidth + Style.space(16)
@@ -184,7 +256,49 @@ Panel {
         if (!tempZonesProc.running)
             tempZonesProc.running = true;
     }
-    Component.onCompleted: refresh()
+    // refreshSection() is also called eagerly here (not just on popup open)
+    // so the very first config.json write includes the real bar section
+    // instead of the "" currentSection starts as.
+    onResolvedChanged: configWriteDebounce.restart()
+    onCurrentSectionChanged: configWriteDebounce.restart()
+    Component.onCompleted: {
+        refresh();
+        refreshSection();
+        ensureConfigDirProc.running = true;
+    }
+
+    Process {
+        id: ensureConfigDirProc
+
+        command: ["mkdir", "-p", root.configDir]
+        onExited: configFile.reload()
+    }
+
+    // No eager write on onLoadFailed (first run: the file doesn't exist
+    // yet): the implicit preload FileView does as soon as `path` resolves
+    // can race ensureConfigDirProc, and an eager write attempted before the
+    // directory exists would silently fail while still marking that text as
+    // "already synced" — leaving the file never actually created. Instead
+    // the file gets created lazily by the first real onResolvedChanged/
+    // onCurrentSectionChanged write below, by which point mkdir -p has long
+    // since finished (same approach notifications/Service.qml uses).
+    FileView {
+        id: configFile
+
+        path: root.configPath
+        watchChanges: true
+        atomicWrites: true
+        printErrors: false
+        onLoaded: root.reconcileConfigFile(text())
+        onFileChanged: reload()
+    }
+
+    Timer {
+        id: configWriteDebounce
+
+        interval: 200
+        onTriggered: root.writeConfigFile()
+    }
 
     Process {
         id: setSettingProc
