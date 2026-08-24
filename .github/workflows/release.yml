@@ -1,62 +1,34 @@
 name: Release
 
-# Triggered by Format/Validate finishing rather than by push directly, so a
-# release is only ever cut from a commit that has been auto-formatted and
-# has passed qmllint/manifest validation.
+# Format and Validate now only run on pull_request, so by the time a commit
+# lands on main (via a merged, required-status-checked PR) it has already
+# been auto-formatted and passed qmllint/manifest validation — no need to
+# wait on those workflows here.
 on:
-  workflow_run:
-    workflows: [Format, Validate]
-    types: [completed]
+  push:
+    branches: [main]
 
 permissions:
   contents: write
-  actions: read
 
 jobs:
   release:
-    if: github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
-    # Format and Validate typically finish within seconds of each other, so
-    # both of their completions can trigger this job for the same commit at
-    # nearly the same time. Without this, both runs can pass the "already
-    # released?" check before either has created the tag, and both then hit
-    # gh release create — the second one fails with HTTP 422 (tag_name
-    # already exists). Serializing by commit means the second run only
-    # starts once the first has finished, by which point its check
-    # correctly sees the tag and skips.
+    # A push to main can trigger this more than once in quick succession
+    # (e.g. a merge commit followed by another push); serializing by commit
+    # means a second run only starts once the first has finished, by which
+    # point its check correctly sees the tag and skips.
     concurrency:
-      group: release-${{ github.event.workflow_run.head_sha }}
+      group: release-${{ github.sha }}
       cancel-in-progress: false
 
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
           fetch-depth: 0
           fetch-tags: true
 
-      # Format and Validate both run on every push and each complete
-      # independently, re-triggering this workflow separately — so only
-      # proceed once BOTH have a successful run recorded for this exact
-      # commit, whichever one's completion happened to trigger this run.
-      - name: Check Format and Validate both succeeded for this commit
-        id: gate
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          sha="${{ github.event.workflow_run.head_sha }}"
-          ready=true
-          for wf in Format Validate; do
-            run=$(gh run list --repo "${{ github.repository }}" --workflow "$wf" --branch main \
-              --json headSha,status,conclusion --jq "[.[] | select(.headSha == \"$sha\")][0]")
-            status=$(echo "$run" | jq -r '.status // empty')
-            conclusion=$(echo "$run" | jq -r '.conclusion // empty')
-            [ "$status" = "completed" ] && [ "$conclusion" = "success" ] || ready=false
-          done
-          echo "ready=$ready" >> "$GITHUB_OUTPUT"
-
       - name: Read version from manifest.json
-        if: steps.gate.outputs.ready == 'true'
         id: version
         run: echo "value=$(jq -r .version manifest.json)" >> "$GITHUB_OUTPUT"
 
@@ -64,7 +36,6 @@ jobs:
       # label tweak), and this workflow can also re-run on the same commit —
       # a pre-existing tag means this version was already released.
       - name: Check whether this version was already released
-        if: steps.gate.outputs.ready == 'true'
         id: check
         run: |
           if git rev-parse -q --verify "refs/tags/v${{ steps.version.outputs.value }}" >/dev/null; then
@@ -77,7 +48,7 @@ jobs:
       # next `## [` heading (or end of file) out of CHANGELOG.md, so the
       # release notes are the changelog entry the version bump shipped with.
       - name: Extract changelog section
-        if: steps.gate.outputs.ready == 'true' && steps.check.outputs.already_released == 'false'
+        if: steps.check.outputs.already_released == 'false'
         run: |
           awk -v ver="${{ steps.version.outputs.value }}" '
             /^## \[/ {
@@ -99,14 +70,14 @@ jobs:
       # response isn't a failure worth failing the job over — anything else
       # still is.
       - name: Create GitHub release
-        if: steps.gate.outputs.ready == 'true' && steps.check.outputs.already_released == 'false'
+        if: steps.check.outputs.already_released == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if ! output=$(gh release create "v${{ steps.version.outputs.value }}" \
             --title "v${{ steps.version.outputs.value }}" \
             --notes-file release_notes.md \
-            --target "${{ github.event.workflow_run.head_sha }}" 2>&1); then
+            --target "${{ github.sha }}" 2>&1); then
             if echo "$output" | grep -qi "already_exists\|already exists"; then
               echo "v${{ steps.version.outputs.value }} was already released — nothing to do."
               exit 0
