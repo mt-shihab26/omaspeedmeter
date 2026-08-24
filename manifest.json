@@ -2,7 +2,7 @@
     "schemaVersion": 1,
     "id": "mt-shihab26.omaspeedmeter",
     "name": "omaspeedmeter",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "author": "mt-shihab26",
     "description": "Omarchy bar widget showing CPU, memory, network, temperature, GPU, and process count stats.",
     "kinds": ["bar-widget"],
