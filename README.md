@@ -6,12 +6,12 @@
 
 [Omarchy](https://omarchy.org/) bar widget showing CPU, memory, swap, network, temperature, GPU, and process count stats.
 
-Click the widget in the bar to open a settings popup where you can toggle
-metrics, reorder segments, split network into up/down segments, switch icons
-for word labels, move the widget between bar sections, and change the
-refresh interval, GPU vendor, temperature source, and network interface —
-all without editing config files by hand. Right-click the widget to open a
-system monitor (`btop` by default, or `htop`).
+Left-click the widget in the bar to open a system monitor (`btop` by
+default, or `htop`). Right-click the widget to open a settings popup where
+you can toggle metrics, reorder segments, split network into up/down
+segments, switch icons for word labels, move the widget between bar
+sections, and change the refresh interval, GPU vendor, temperature source,
+and network interface — all without editing config files by hand.
 
 <table>
 <tr>
@@ -58,7 +58,7 @@ refresh interval changes.
 
 ## Settings
 
-All settings are toggled/edited from the bar widget's click popup, and are
+All settings are toggled/edited from the bar widget's right-click popup, and are
 persisted via [`omarchy bar set`](https://omarchy.org/manual/the-top-bar/).
 
 | Setting         | Default             | Description                                                                    |
@@ -77,7 +77,7 @@ persisted via [`omarchy bar set`](https://omarchy.org/manual/the-top-bar/).
 | `gpuVendor`     | `auto`              | `auto`, `nvidia`, `amd`, `intel`, or `none`                                    |
 | `netIface`      | `auto`              | `auto`, or a specific network interface name                                   |
 | `tempZone`      | `auto`              | `auto`, or a specific `/sys/class/thermal/thermal_zone*/temp` path             |
-| `systemMonitor` | `btop`              | `btop` or `htop`; opened by right-clicking the widget                          |
+| `systemMonitor` | `btop`              | `btop` or `htop`; opened by left-clicking the widget                           |
 | `order`         | _(insertion order)_ | Segment display order; set with the ▲/▼ buttons in the popup's METRICS list    |
 
 `auto` for GPU vendor and temperature zone probes the system on each poll;
@@ -175,7 +175,7 @@ resolution, formatting, segment building) separately from the QML so it can
 be reasoned about — and unit tested — without a
 [Quickshell](https://quickshell.org/) runtime.
 
-Right-clicking the widget opens the configured `systemMonitor` (`btop` by
+Left-clicking the widget opens the configured `systemMonitor` (`btop` by
 default, or `htop`) via
 [`omarchy-launch-or-focus-tui`](https://omarchy.org/manual/omarchy-cli/),
 focusing an existing window for it instead of spawning a duplicate if one is
@@ -202,7 +202,7 @@ with `omarchy bar set`/`omarchy bar move`.
     - AMD: no extra tooling (reads sysfs directly)
     - Intel: [`intel_gpu_top`](https://man.archlinux.org/man/intel_gpu_top.1.en)
       and [`jq`](https://jqlang.github.io/jq/manual/)
-- Right-click requires whichever `systemMonitor` is configured
+- Left-click requires whichever `systemMonitor` is configured
   ([`btop`](https://github.com/aristocratos/btop) or
   [`htop`](https://htop.dev/)) to be installed.
 

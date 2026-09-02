@@ -82,7 +82,7 @@
             {
                 "key": "systemMonitor",
                 "type": "string",
-                "label": "System monitor to open on right-click (btop/htop)"
+                "label": "System monitor to open on left-click (btop/htop)"
             },
             {
                 "key": "order",

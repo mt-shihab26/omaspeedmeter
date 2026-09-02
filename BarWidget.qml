@@ -6,9 +6,10 @@ import qs.Commons
 import qs.Ui
 
 // Omaspeedmeter bar widget: CPU / memory / network / temperature / GPU /
-// process-count stats in the bar row, with a click popup to toggle each
-// metric and tweak the underlying settings (refresh interval, GPU vendor,
-// temperature source, network interface).
+// process-count stats in the bar row. Left-click opens the configured
+// system monitor; right-click opens the popup to toggle each metric and
+// tweak the underlying settings (refresh interval, GPU vendor, temperature
+// source, network interface).
 Panel {
     id: root
 
@@ -471,9 +472,9 @@ Panel {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: function (mouse) {
             if (mouse.button === Qt.RightButton)
-                root.launchSystemMonitor();
-            else
                 root.toggle();
+            else
+                root.launchSystemMonitor();
         }
     }
 
@@ -703,7 +704,7 @@ Panel {
                 }
 
                 Dropdown {
-                    label: "System monitor (right-click)"
+                    label: "System monitor (left-click)"
                     width: settingsColumn.width
                     value: root.resolved.systemMonitor
                     options: ["btop", "htop"]
