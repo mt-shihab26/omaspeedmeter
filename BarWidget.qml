@@ -448,7 +448,7 @@ Panel {
                 required property var modelData
 
                 text: modelData.text
-                color: root.bar ? root.bar.foreground : Color.foreground
+                color: root.bar ? root.bar.barForeground : Color.foreground
                 font.family: root.bar ? root.bar.fontFamily : Style.font.family
                 font.pixelSize: Style.font.body
             }
@@ -459,7 +459,7 @@ Panel {
         Text {
             visible: root.segments.length === 0
             text: "omaspeedmeter"
-            color: root.bar ? root.bar.foreground : Color.foreground
+            color: root.bar ? root.bar.barForeground : Color.foreground
             font.family: root.bar ? root.bar.fontFamily : Style.font.family
             font.pixelSize: Style.font.body
         }
@@ -513,7 +513,7 @@ Panel {
                         anchors.left: parent.left
                         anchors.verticalCenter: parent.verticalCenter
                         text: "Omaspeedmeter"
-                        color: root.bar ? root.bar.foreground : Color.foreground
+                        color: root.bar ? root.bar.barForeground : Color.foreground
                         font.family: root.bar ? root.bar.fontFamily : Style.font.family
                         font.pixelSize: Style.font.title
                         font.bold: true
@@ -524,19 +524,19 @@ Panel {
                         anchors.verticalCenter: parent.verticalCenter
                         iconText: "↺"
                         tooltipText: "Reset all settings to default"
-                        foreground: root.bar ? root.bar.foreground : Color.foreground
+                        foreground: root.bar ? root.bar.barForeground : Color.foreground
                         fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                         onClicked: root.resetSettings()
                     }
                 }
 
                 PanelSeparator {
-                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    foreground: root.bar ? root.bar.barForeground : Color.foreground
                 }
 
                 PanelSectionHeader {
                     text: "METRICS"
-                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    foreground: root.bar ? root.bar.barForeground : Color.foreground
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                 }
 
@@ -557,7 +557,7 @@ Panel {
                             label: metricRow.modelData.icon + "  " + metricRow.modelData.label
                             description: metricRow.modelData.description || ""
                             checked: root.resolved[metricRow.modelData.key] === true
-                            foreground: root.bar ? root.bar.foreground : Color.foreground
+                            foreground: root.bar ? root.bar.barForeground : Color.foreground
                             fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                             onClicked: root.toggleMetric(metricRow.modelData.key)
                         }
@@ -568,7 +568,7 @@ Panel {
                             anchors.verticalCenter: parent.verticalCenter
                             iconText: "▲"
                             tooltipText: "Move up"
-                            foreground: root.bar ? root.bar.foreground : Color.foreground
+                            foreground: root.bar ? root.bar.barForeground : Color.foreground
                             fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                             enabled: metricRow.index > 0
                             onClicked: root.moveMetric(metricRow.modelData.key, -1)
@@ -580,7 +580,7 @@ Panel {
                             anchors.verticalCenter: parent.verticalCenter
                             iconText: "▼"
                             tooltipText: "Move down"
-                            foreground: root.bar ? root.bar.foreground : Color.foreground
+                            foreground: root.bar ? root.bar.barForeground : Color.foreground
                             fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                             enabled: metricRow.index < root.orderedMetrics.length - 1
                             onClicked: root.moveMetric(metricRow.modelData.key, 1)
@@ -593,7 +593,7 @@ Panel {
                     label: "Split network up/down"
                     description: "Separate download and upload"
                     checked: root.resolved.netSplit === true
-                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    foreground: root.bar ? root.bar.barForeground : Color.foreground
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                     onClicked: root.toggleMetric("netSplit")
                 }
@@ -603,18 +603,18 @@ Panel {
                     label: "Show word labels"
                     description: "Show label instead of icon"
                     checked: root.resolved.labels === true
-                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    foreground: root.bar ? root.bar.barForeground : Color.foreground
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                     onClicked: root.toggleMetric("labels")
                 }
 
                 PanelSeparator {
-                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    foreground: root.bar ? root.bar.barForeground : Color.foreground
                 }
 
                 PanelSectionHeader {
                     text: "SETTINGS"
-                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    foreground: root.bar ? root.bar.barForeground : Color.foreground
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                 }
 
@@ -624,7 +624,7 @@ Panel {
 
                     Text {
                         text: "Bar position"
-                        color: Qt.darker(root.bar ? root.bar.foreground : Color.foreground, 1.4)
+                        color: Qt.darker(root.bar ? root.bar.barForeground : Color.foreground, 1.4)
                         font.family: root.bar ? root.bar.fontFamily : Style.font.family
                         font.pixelSize: Style.font.caption
                     }
@@ -632,7 +632,7 @@ Panel {
                     ButtonGroup {
                         options: ["left", "center", "right"]
                         value: root.currentSection
-                        foreground: root.bar ? root.bar.foreground : Color.foreground
+                        foreground: root.bar ? root.bar.barForeground : Color.foreground
                         fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                         onChanged: function (v) {
                             root.setSection(v);
@@ -646,7 +646,7 @@ Panel {
                     from: 1
                     to: 60
                     stepSize: 1
-                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    foreground: root.bar ? root.bar.barForeground : Color.foreground
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                     onModified: function (v) {
                         root.setSetting("interval", v, true);
@@ -659,7 +659,7 @@ Panel {
                     from: 0
                     to: 40
                     stepSize: 1
-                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    foreground: root.bar ? root.bar.barForeground : Color.foreground
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                     onModified: function (v) {
                         root.setSetting("gap", v, true);
@@ -671,7 +671,7 @@ Panel {
                     width: settingsColumn.width
                     value: root.resolved.gpuVendor
                     options: ["auto", "nvidia", "amd", "intel", "none"]
-                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    foreground: root.bar ? root.bar.barForeground : Color.foreground
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                     onChanged: function (v) {
                         root.setSetting("gpuVendor", v, false);
@@ -683,7 +683,7 @@ Panel {
                     width: settingsColumn.width
                     value: root.resolved.netIface
                     options: root.netIfaceOptions
-                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    foreground: root.bar ? root.bar.barForeground : Color.foreground
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                     onChanged: function (v) {
                         root.setSetting("netIface", v, false);
@@ -695,7 +695,7 @@ Panel {
                     width: settingsColumn.width
                     value: root.resolved.tempZone
                     options: root.tempZoneOptions
-                    foreground: root.bar ? root.bar.foreground : Color.foreground
+                    foreground: root.bar ? root.bar.barForeground : Color.foreground
                     fontFamily: root.bar ? root.bar.fontFamily : Style.font.family
                     onChanged: function (v) {
                         root.setSetting("tempZone", v, false);
